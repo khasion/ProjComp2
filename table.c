@@ -289,6 +289,18 @@ void expand() {
     	free_table(old_sym);
 }
 
+Symbol* table_lookup_id(const char* name) {
+	Symbol* temp;
+	temp = symtable->table[hash_function(name)];
+	while (temp) {
+		if ( strcmp(temp->name, name) == 0) {
+			return temp;
+		}
+		temp = temp->next;
+	}
+	return temp;
+}
+
 Symbol* table_lookup(const char* name, unsigned scope) {
 	Symbol* temp;
 	temp = symtable->table[hash_function(name)];

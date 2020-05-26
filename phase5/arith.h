@@ -1,3 +1,6 @@
+#ifndef ARITH_H
+#define ARITH_H
+
 typedef double (*arithmetic_func_t)(double x, double y);
 
 #define execute_add execute_arithmetic
@@ -17,3 +20,5 @@ void execute_sub(instruction* instr);
 void execute_mul(instruction* instr);
 void execute_div(instruction* instr);
 void execute_mod(instruction* instr);
+
+#endif

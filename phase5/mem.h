@@ -18,7 +18,7 @@ typedef enum avm_memcell_t {
 
 struct avm_table;
 typedef struct avm_memcell {
-     avm_memcell_t type; 
+     avm_memcell_t type;
      union {
           double              numVal;
           char*               strVal;
@@ -26,7 +26,6 @@ typedef struct avm_memcell {
           struct avm_table*   table_val;
           unsigned            funcVal;
           char*               libfuncVal;
-          Symbol*             symVal;
      } data;
 } avm_memcell;
 
@@ -77,11 +76,3 @@ extern unsigned  totalNamedLibFuncs;
 
 extern userfunc* userFuncs;
 extern unsigned  totaluserFuncs;
-
-void initMem();
-
-void stack_push(avm_memcell* stack, Symbol* s);
-Symbol* stack_top(avm_memcell* stack);
-Symbol* stack_pop(avm_memcell* stack);
-
-void append(retList* returnList, unsigned label);

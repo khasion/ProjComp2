@@ -26,6 +26,11 @@ typedef enum symbol_t {
 	libraryfunc_s
 }Symbol_t;
 
+typedef struct retList {
+	unsigned retVal;
+	struct retList* next;
+}retList;
+
 typedef struct symbol {
 	Symbol_t 		type;
 	char* 		name;
@@ -39,6 +44,7 @@ typedef struct symbol {
 	unsigned 		iaddress;
 	unsigned		taddress;
 	unsigned 		totalLocals;
+	retList* 		returnList;
     	struct symbol* next;
     	struct symbol* scopenext;
 }Symbol;
@@ -98,6 +104,8 @@ void print_table();
 /* Unhide all Symbols with smaller scope and hide all Symbols with larger scope. */
 void hide(int scope);
 
+/* Search for a symbol with the given name in hash table.*/
+Symbol* table_lookup_id(const char* name);
 /* Search for a Symbol in hash table. */
 Symbol* table_lookup(const char* name, unsigned scope);
 /* Search for collisions with library functions.*/

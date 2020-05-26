@@ -1,3 +1,7 @@
+#ifndef RELOP_H
+#define RELOP_H
+#define "mem.h"
+
 typedef char* (*tostring_func_t)(avm_memcell*);
 
 void execute_jeq(instruction* instr);
@@ -26,29 +30,8 @@ unsigned char nil_tobool (avm_memcell* m);
 unsigned char undef_tobool (avm_memcell* m);
 unsigned char avm_tobool(avm_memcell* m);
 
-tostring_func_t tostringFuncs[]={
-	number_tostring,
-	strng_tostring,
-	bool_tostring,
-	table_tostring,
-	userfunc_tostring,
-	libfunc_tostring,
-	nil_tostring,
-	undef_tostring
-};
-
-tobool_func_t toboolFuncs[]={
-	number_tobool,
-	string_tobool,
-	bool_tobool,
-	table_tobool,
-	userfunc_tobool,
-	libfunc_tobool,
-	nil_tobool,
-	undef_tobool,
-	avm_tobool
-};
 
 char* avm_tostring(avm_memcell* m);
 unsigned char avm_tobool(avm_memcell* m);
 
+#endif

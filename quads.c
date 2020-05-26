@@ -155,6 +155,7 @@ Expr* newexpr(Expr_t t) {
 Expr* newexpr_constbool(unsigned char boolean){
      Expr* tmp = newexpr(constbool_e);
      tmp->boolConst = boolean;
+     
 
      tmp->sym = (Symbol*) malloc(sizeof(Symbol));
      if (boolean) tmp->sym->name = strdup("'true'");
@@ -167,6 +168,7 @@ Expr* newexpr_constnum(double i) {
      Expr* e = newexpr(constnum_e);
      char* n;
      e->numConst = i;
+     
 
      n = (char*) malloc(sizeof(char)*4);
      if (isInteger(i)) sprintf(n, "%d", (int)i);
@@ -183,6 +185,7 @@ Expr* newexpr_conststring(char* s) {
      tmp->sym->name = (char*) malloc(sizeof(s));
      sprintf(tmp->sym->name, "\"%s\"", s);  
      tmp->strConst = strdup(s);
+     //tmp->type = conststring_e;
      return tmp;
 }
 

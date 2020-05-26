@@ -1,8 +1,14 @@
+#ifndef AVM_H
+#define AVM_H
+
 #define AVM_STACKENV_SIZE 4
+#define AVM_MAX_INSTRUCTIONS (unsigned) nop_v
+
 avm_memcell ax, bx, cx;
 avm_memcell retval;
 unsigned top, topsp;
 
+typedef void (*execute_func_t)(instruction*);
 struct avm_table;
 
 enum avm_memcell_t{
@@ -42,3 +48,5 @@ library_func_t avm_getlibraryfunc(char* id);
 extern void avm_assign(avm_memcell* lv, avm_memcell* rv);
 avm_memcell* avm_tablegetelem(avm_table* table, avm_memcell* index, avm_memcell* content);
 void avm_tablesetelem(avm_table* table, avm_memcell* index, avm_memcell* content);
+
+#endif

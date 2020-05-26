@@ -5,6 +5,7 @@
      #include <string.h>
      #include "quads.h"
      #include "stack.h"
+     #include "avm.h"
 
      #define  YY_DECL int alpha_yylex (void* yylval)
      void yyerror (char* yaccProovidedMessage);
@@ -721,6 +722,8 @@ int main(int argc, char** argv) {
      yyparse();
      //print_table();
      print_intermediate();
+     generate1();
+     print_instructions();
      free_table(symtable);
      return 0;
 }

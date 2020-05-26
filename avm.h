@@ -11,7 +11,7 @@ unsigned consts_newnumber(double d);
 unsigned userfuncs_newfunc(Symbol* s);
 unsigned libfuncs_newused(char* s);
 
-typedef void (*generator_func_t)(Quad);
+typedef void (*generator_func_t)(Quad*);
 extern generator_func_t generators[];
 
 typedef enum vmopcode {
@@ -75,33 +75,38 @@ void reset_operand (vmarg* arg);
 
 unsigned currprocessedquad();
 
-extern void generate_ADD (Quad);
-extern void generate_SUB (Quad);
-extern void generate_MUL (Quad);
-extern void generate_DIV (Quad);
-extern void generate_MOD (Quad);
-extern void generate_NEWTABLE (Quad);
-extern void generate_TABLEGETELEM (Quad);
-extern void generate_TABLESETELEM (Quad);
-extern void generate_ASSIGN (Quad);
+extern void generate_ADD (Quad*);
+extern void generate_SUB (Quad*);
+extern void generate_MUL (Quad*);
+extern void generate_DIV (Quad*);
+extern void generate_MOD (Quad*);
+extern void generate_NEWTABLE (Quad*);
+extern void generate_TABLEGETELEM (Quad*);
+extern void generate_TABLESETELEM (Quad*);
+extern void generate_ASSIGN (Quad*);
 extern void generate_NOP ();
-extern void generate_JUMP (Quad);
-extern void generate_IF_EQ (Quad);
-extern void generate_IF_NOTEQ (Quad);
-extern void generate_IF_GREATER (Quad);
-extern void generate_IF_GREATEREQ (Quad);
-extern void generate_IF_LESS (Quad);
-extern void generate_IF_LESSEQ (Quad);
-extern void generate_UMINUS (Quad);
-extern void generate_NOT (Quad);
-extern void generate_AND (Quad);
-extern void generate_OR (Quad);
-extern void generate_PARAM (Quad);
-extern void generate_CALL (Quad);
-extern void generate_GETRETVAL (Quad);
+extern void generate_JUMP (Quad*);
+extern void generate_IF_EQ (Quad*);
+extern void generate_IF_NOTEQ (Quad*);
+extern void generate_IF_GREATER (Quad*);
+extern void generate_IF_GREATEREQ (Quad*);
+extern void generate_IF_LESS (Quad*);
+extern void generate_IF_LESSEQ (Quad*);
+extern void generate_UMINUS (Quad*);
+extern void generate_NOT (Quad*);
+extern void generate_AND (Quad*);
+extern void generate_OR (Quad*);
+extern void generate_PARAM (Quad*);
+extern void generate_CALL (Quad*);
+extern void generate_GETRETVAL (Quad*);
 
-extern void generate_FUNCSTART (Quad);
-extern void generate_RETURN (Quad);
-extern void generate_FUNCEND (Quad);
+extern void generate_FUNCSTART (Quad*);
+extern void generate_RETURN (Quad*);
+extern void generate_FUNCEND (Quad*);
+
+void generate1();
+
+
+void print_instructions();
 
 #endif
