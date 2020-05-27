@@ -2,6 +2,7 @@
 
 incomplete_jump*    ij_head   = (incomplete_jump*) 0;
 unsigned            ij_total  = 0;
+unsigned            currProcessedQuad;
 
 instruction* instructions = (instruction*) 0;
 unsigned currIns = 0;
@@ -31,8 +32,8 @@ generator_func_t (generators[]) = {
 	generate_GETRETVAL ,
 	generate_FUNCSTART ,
 	generate_FUNCEND ,
-	generate_JUMP ,
 	generate_NEWTABLE ,
+	generate_JUMP ,
      generate_TABLEGETELEM ,
      generate_TABLESETELEM ,
      generate_NOP
@@ -76,9 +77,17 @@ void expand_ins() {
      totalIns += EXPAND_SIZE;
 }
 
+void instructions_backpatch (unsigned list, unsigned label) {
+     printf("GAMISOU \n");
+     while (list) {
+          int next = quads[list].label;
+          instructions[list].label = label;
+          list = next;
+     }
+}
+
+
 void make_operand(Expr* e, vmarg* arg){
-     
-     printf("type: %d\n", e->type);
      switch(e->type) {
           
           /* All those below use a variable for storage.
@@ -92,30 +101,32 @@ void make_operand(Expr* e, vmarg* arg){
 
                assert(e->sym);
                arg->val = e->sym->offset;
-
+               arg->id = strdup(e->sym->name);
                switch (e->sym->space) { 
-                    case programvar:    arg->type = global_a; break;
-                    case functionlocal: arg->type = local_a; break;
-                    case formalarg:     arg->type = formal_a; break;
+ 
+                    case programvar     : arg->type = global_a; break;
+                    case functionlocal  : arg->type = local_a; break;
+                    case formalarg      : arg->type = formal_a; break;
                     default: assert(0);
                }
-               table_insert(e);
                break; /* from case newtable_e.*/
           }
 
           /* Constants */
 
           case constbool_e: {
+               arg->id = strdup(e->sym->name);
                arg->val = e->boolConst;
                arg->type = bool_a; break;
           }
           case conststring_e: {
+               arg->id = strdup(e->strConst);
                arg->val = consts_newstring(e->strConst);
                arg->type = string_a; break;
           }
           case constnum_e: {
+               arg->id = strdup(e->sym->name);
                arg->val = consts_newnumber(e->numConst);
-               printf("ASD\n");
                arg->type = number_a; break;
           }
 
@@ -123,10 +134,13 @@ void make_operand(Expr* e, vmarg* arg){
 
           /* Functions */
           case programfunc_e: {
+               arg->id = strdup(e->sym->name);
                arg->val = userfuncs_newfunc(e->sym);
+               arg->type = userfunc_a;
                break;
           }
           case libraryfunc_e: {
+               arg->id = strdup(e->sym->name);
                arg->type = libfunc_a;
                arg->val = libfuncs_newused(e->sym->name);
                break;
@@ -186,6 +200,7 @@ unsigned nextinstructionlabel() {
 
 void instructions_emit(instruction t) {
      if (currIns >= totalIns) expand_ins();
+     t.label = currIns + 1;
      instructions[currIns++] = t;
      totalIns++;
 }
@@ -193,6 +208,9 @@ void instructions_emit(instruction t) {
 void generate (vmopcode op, Quad* quad) {
      instruction t;
      t.opcode = op;
+     t.arg1.type = 11;
+     t.arg2.type = 11;
+     t.result.type = 11;
      if ( quad->arg1) make_operand(quad->arg1, &t.arg1);  
      if ( quad->arg2 ) make_operand(quad->arg2, &t.arg2);
      if ( quad->result ) make_operand(quad->result, &t.result);
@@ -218,30 +236,29 @@ void generate_UMINUS (Quad* quad) {
 void generate_NEWTABLE (Quad* quad)      { generate(newtable_v, quad); } 
 void generate_TABLEGETELEM (Quad* quad)  { generate(tablegetelem_v, quad); } 
 void generate_TABLESETELEM (Quad* quad)  { generate(tablesetelem_v, quad); } 
-void generate_ASSIGN (Quad* quad)        { generate(assign_v, quad); } 
+void generate_ASSIGN (Quad* quad)        { generate(assign_v, quad);} 
 void generate_NOP ()                    { instruction t; t.opcode=nop_v; instructions_emit(t); } 
 
 unsigned currprocessedquad() {
-     return nextquad() - 1;
+     return currProcessedQuad;
 }
 
-/* Den katalavainw to currprocessedquad() .. mhpws einai nextquad()-1 ?
-*/
+
 void generate_relational (vmopcode  op, Quad* quad) {
      instruction t;
      t.opcode = op;
-     make_operand(quad->arg1, &t.arg1);  
-     make_operand(quad->arg2, &t.arg2);    
+     if(quad->arg1) make_operand(quad->arg1, &t.arg1);  
+     if(quad->arg2) make_operand(quad->arg2, &t.arg2);
 
      t.result.type = label_a;  
-     if (quad->label < currprocessedquad()) {
-          t.result.val = quads[quad->label].taddress;  
+     if (quad->label != 0) {
+          t.result.val = quads[quad->label].taddress;
      }
      else {
-          add_incomplete_jump(nextinstructionlabel(), quad->label); 
+          add_incomplete_jump(nextinstructionlabel(), quad->label);
      }
-     quad->taddress = nextinstructionlabel();  
-     instructions_emit(t); 
+     quad->taddress = nextinstructionlabel();
+     instructions_emit(t);
 }
 
 void generate_JUMP (Quad* quad)  { generate_relational(jump_v, quad); } 
@@ -364,16 +381,16 @@ void generate_PARAM(Quad* quad) {
      instructions_emit(t); 
 }   
 
-void generate_CALL(Quad* quad) {  
+void generate_CALL(Quad* quad) {
      quad->taddress = nextinstructionlabel();  
      instruction t;  
      t.opcode = call_v;  
-     make_operand(quad->arg1, &t.arg1);  
+     make_operand(quad->arg1, &t.arg1);
      instructions_emit(t); 
 }   
 void generate_GETRETVAL(Quad* quad) {
      quad->taddress = nextinstructionlabel();
-     instruction t;  
+     instruction t;
      t.opcode = assign_v;  
      make_operand(quad->result, &t.result);  
      make_retvaloperand(&t.arg1);  
@@ -382,33 +399,34 @@ void generate_GETRETVAL(Quad* quad) {
 
 void generate_FUNCSTART(Quad* quad){
      Symbol* f;
-     f = quad->result->sym;
+     f = quad->arg1->sym;
      f->taddress = nextinstructionlabel();
      quad->taddress = nextinstructionlabel();
-
+     
      userfuncs_newfunc(f);
      stack_push(stack, f);
 
      instruction t;
      t.opcode = funcenter_v;
-     make_operand(quad->result , &t.result);
+     make_operand(quad->arg1 , &t.result);
+
      instructions_emit(t);
 }
 
 void generate_RETURN(Quad* quad){
      quad->taddress = nextinstructionlabel();
      Symbol* f;
-
      instruction t;
      t.opcode = assign_v;
      make_retvaloperand(&t.result);
-     make_operand(quad->arg1, &t.arg1);
+     make_operand(quad->result, &t.arg1);
      instructions_emit(t);
 
      f = stack_top(stack);
-     append(f->returnList , nextinstructionlabel());
+     f->returnList = append(f->returnList, nextinstructionlabel());
 
      t.opcode = jump_v;
+     
      reset_operand (&t.arg1);
      reset_operand (&t.arg2);
      t.result.type = label_a;
@@ -418,11 +436,11 @@ void generate_RETURN(Quad* quad){
 void generate_FUNCEND(Quad* quad){
      Symbol* f;
      f = stack_pop(stack);
-     backpatch(f->returnList->retVal ,nextinstructionlabel());
+     if ( f->returnList) instructions_backpatch(f->returnList->retVal ,nextinstructionlabel());
      quad->taddress = nextinstructionlabel();
      instruction t;
      t.opcode = funcexit_v;
-     make_operand(quad->result , &t.result);
+     make_operand(quad->arg1 , &t.result);
      instructions_emit(t);
 }
 
@@ -430,9 +448,10 @@ void generate1(void) {
      unsigned i;
      initMem();
      for(i = 1; i < nextquad(); i++){
-          printf("HELASD\n");
+          currProcessedQuad = i;
          (*generators[quads[i].op])( (quads+i));
      }
+     patch_incomplete_jumps();
 }
 
 void print_instructions() {
@@ -448,57 +467,68 @@ void print_instructions() {
      "nop_v"
      };
      FILE* fp;
-     unsigned magic = 340;
+     unsigned magic = 340200501;
      fp = fopen("mikriloulou.abc", "wb");
-     fprintf(fp, "%d \n", magic);
+     fprintf(fp, "Magic: %d \n", magic);
      for ( int i = 0; i < nextinstructionlabel(); i++) {
-          fprintf(fp, "%s ", opcodes[instructions[i].opcode]);
           vmarg res = (instructions + i)->result;
-          switch ( res.type) {
-               case label_a        :
-               case global_a       :
-               case formal_a       :
-               case local_a        :
-               case bool_a         : fprintf(fp, "%f ", numConsts[res.val]);
-               case retval_a       :
-               case nil_a          : fprintf(fp, "(NULL) ");
-               case number_a       : fprintf(fp, "%f ", numConsts[res.val]);
-               case string_a       : fprintf(fp, "%s ", stringConsts[res.val]);
-               case userfunc_a     : fprintf(fp, "%s ", userFuncs[res.val].id);
-               case libfunc_a      : fprintf(fp, "%s ", namedLibfuncs[res.val]);
-               default             : break;
-          }
           vmarg arg1 = (instructions + i)->arg1;
-          switch ( arg1.type) {
-               case label_a        :
-               case global_a       :
-               case formal_a       :
-               case local_a        :
-               case bool_a         :
-               case retval_a       :
-               case nil_a          :
-               case number_a       : fprintf(fp, "%f ", numConsts[arg1.val]);
-               case string_a       : fprintf(fp, "%s ", stringConsts[arg1.val]);
-               case userfunc_a     : fprintf(fp, "%s ", userFuncs[arg1.val].id);
-               case libfunc_a      : fprintf(fp, "%s ", namedLibfuncs[arg1.val]);
-               default             : break;
-          }
           vmarg arg2 = (instructions + i)-> arg2;
-          switch ( arg2.type) {
-               case label_a        :
-               case global_a       :
-               case formal_a       :
-               case local_a        :
-               case bool_a         :
-               case retval_a       :
-               case nil_a          :
-               case number_a       : fprintf(fp, "%f ", numConsts[arg2.val]);
-               case string_a       : fprintf(fp, "%s ", stringConsts[arg2.val]);
-               case userfunc_a     : fprintf(fp, "%s ", userFuncs[arg2.val].id);
-               case libfunc_a      : fprintf(fp, "%s ", namedLibfuncs[arg2.val]);
+          printf("ASDA %d\n",i);
+          //if((res.id && istempname(res.id)) ||
+          //(arg1.id && istempname(arg1.id)) || (arg2.id && istempname(arg2.id))) continue;
+          fprintf(fp, "%s ", opcodes[instructions[i].opcode]);
+          printf("edw\n");
+          switch ( res.type) {
+               case label_a        : fprintf(fp, "00(label), %d ", res.val); break;
+               case global_a       : fprintf(fp, "01(global), %d:%s ", res.val ,res.id); break;
+               case formal_a       : fprintf(fp, "02(formal), %d:%s ", res.val ,res.id); break;
+               case local_a        : fprintf(fp, "03(local), %d:%s ", res.val ,res.id); break;
+               case bool_a         : fprintf(fp, "06(boolean), %d:%s ", res.val ,res.id); break;
+               case retval_a       : fprintf(fp, "10(retval)"); break;
+               case nil_a          : fprintf(fp, "07(NULL) "); break;
+               case number_a       : fprintf(fp, "04(num), %d:%f ", res.val, numConsts[res.val]); break;
+               case string_a       : fprintf(fp, "05(string), %d:\"%s\" ", res.val, stringConsts[res.val]); break;
+               case userfunc_a     : fprintf(fp, "08(userfunc), %d:%s ", res.val, userFuncs[res.val].id); break;
+               case libfunc_a      : fprintf(fp, "09(libfunc), %d:%s ", res.val,namedLibfuncs[res.val]); break;
                default             : break;
           }
+          fprintf(fp, "\t");
+          printf("edw1\n");
+          switch ( arg1.type) {
+               case label_a        : printf("edw2\n"); fprintf(fp, "00 (label), %d ", arg1.val); break;
+               case global_a       : printf("edw2.1\n");fprintf(fp, "01(global), %d:%s ", arg1.val, arg1.id); break;
+               case formal_a       : printf("edw2.2\n");fprintf(fp, "02(formal), %d:%s ", arg1.val ,arg1.id); break;
+               case local_a        : printf("edw2.3\n"); /*fprintf(fp, "03(local), %d:%s ", arg1.val, arg1.id);*/ break;
+               case bool_a         : printf("edw2.4\n"); fprintf(fp, "06(boolean), %d:%s ", arg1.val ,arg1.id); break;
+               case retval_a       : printf("edw2.5\n"); fprintf(fp, "10(retval)"); break;
+               case nil_a          : printf("edw2.6\n");fprintf(fp, "07(NULL) "); break;
+               case number_a       : printf("edw2.7\n");fprintf(fp, "04(num), %d:%f ", arg1.val, numConsts[arg1.val]); break;
+               case string_a       : printf("edw2.8\n");fprintf(fp, "05(string), %d:\"%s\" ", arg1.val,stringConsts[arg1.val]); break;
+               case userfunc_a     : printf("edw2.9\n");fprintf(fp, "08(userfunc), %d:%s ", arg1.val, userFuncs[arg1.val].id); break;
+               case libfunc_a      : printf("edw2.10\n");fprintf(fp, "09(libfunc), %d:%s ", arg1.val,namedLibfuncs[arg1.val]); break;
+               default             : break;
+          }
+          fprintf(fp, "\t");
+          
+          switch ( arg2.type) {
+               case label_a        : fprintf(fp, "00 (label), %d", arg2.val); break;
+               case global_a       : fprintf(fp, "01(global), %d:%s ", arg2.val, arg2.id); break;
+               case formal_a       : fprintf(fp, "02(formal), %d:%s ", arg2.val ,arg2.id); break;
+               case local_a        : fprintf(fp, "03(local), %d:%s ", arg2.val, arg2.id); break;
+               case bool_a         : fprintf(fp, "06(boolean), %d:%s ", arg2.val ,arg2.id); break;
+               case retval_a       : fprintf(fp, "10(retval)"); break;
+               case nil_a          : fprintf(fp, "(NULL) "); break;
+               case number_a       : fprintf(fp, "04(num), %d:%f ", arg2.val, numConsts[arg2.val]); break;
+               case string_a       : fprintf(fp, "05(string), %d:\"%s\" ", arg2.val,stringConsts[arg2.val]); break;
+               case userfunc_a     : fprintf(fp, "08(userfunc), %d:%s ", arg2.val, userFuncs[arg1.val].id); break;
+               case libfunc_a      : fprintf(fp, "09(libfunc), %d:%s ", arg2.val,namedLibfuncs[arg2.val]); break;
+               default             : break;
+          }
+          printf("edw3\n");
+          fprintf(fp, "\t");
           fprintf(fp, "\n");
      }
+     
      fclose(fp);
 }

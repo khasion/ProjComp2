@@ -92,23 +92,8 @@ void avm_tabledestroy (avm_table* t) {
      free(t);
 }
 
-unsigned avm_hashfunction(char* name) {
-  	size_t ui;
-  	unsigned int uiHash = 0;
-  	for (ui = 0U; name[ui] != '\0'; ui++){
-  		uiHash = uiHash * HASH_MULTIPLIER + name[ui];
-  	}
-  	return uiHash%symtable->buckets;
-}
-
-void avm_insert(Expr* e) {
-     switch (e->type) {
-          case var_e :
-          case : 
-     }
-}
-
 unsigned consts_newstring (char* s) {
+     stringConsts[totalStringConsts] = (char*) malloc(sizeof(s));
      sprintf(stringConsts[totalStringConsts++], "%s", s);
      return totalStringConsts - 1;
 }
@@ -119,6 +104,7 @@ unsigned consts_newnumber (double d) {
 }
 
 unsigned userfuncs_newfunc (Symbol* s) {
+     printf("ASD\n");
      userFuncs[totaluserFuncs].address = s->taddress;
      userFuncs[totaluserFuncs].localSize = s->totalLocals;
      userFuncs[totaluserFuncs++].id = strdup(s->name);
@@ -126,6 +112,7 @@ unsigned userfuncs_newfunc (Symbol* s) {
 }
 
 unsigned libfuncs_newused (char* s) {
+     namedLibfuncs[totalNamedLibFuncs] = (char*) malloc(sizeof(s));
      sprintf(namedLibfuncs[totalNamedLibFuncs++], "%s", s);
      return totalNamedLibFuncs - 1;
 }
@@ -136,20 +123,21 @@ void stack_push(avm_memcell* stack, Symbol* sym) {
 }
 
 Symbol* stack_top(avm_memcell* stack) {
-     return stack[top-1].data.symVal;
+     return stack[top+1].data.symVal;
 }
 
 Symbol* stack_pop(avm_memcell* stack) {
      Symbol* data;
-     data = stack[top].data.symVal;
+     data = stack[top+1].data.symVal;
      top++;
      return data;
 }
 
-void append(retList* returnList, unsigned label) {
+retList* append(retList* returnList, unsigned label) {
      retList* new_ret;
      new_ret = (retList*) malloc(sizeof(retList));
      new_ret->retVal = label;
      new_ret->next = returnList;
      returnList = new_ret;
+     return returnList;
 }

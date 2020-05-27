@@ -1,3 +1,8 @@
-340 
-assign_v 3.000000 (null) (null) (null) 
-assign_v 
+Magic: 340200501 
+jump_v 00(label), 0 			
+funcenter_v 08(userfunc), 1:f 	00 (label), 0 	00 (label), -2017500693	
+add_v 03(local), 2:^0 	02(formal), 0:x 	02(formal), 1:y 	
+assign_v 10(retval)			
+jump_v 00(label), 2 			
+jump_v 00(label), 0 		00 (label), 2	
+funcexit_v 08(userfunc), 2:f 		00 (label), -2017500693	

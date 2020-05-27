@@ -388,6 +388,7 @@ Symbol* create_item(Symbol_t type, const char* name, unsigned space, unsigned of
 	new_data->offset = offset;
 	new_data->scope = scope;
 	new_data->line = line;
+	new_data->returnList = NULL;
 
 	switch (type) {
 		case 0	:	new_data->desc = strdup("[local variable]");		break;

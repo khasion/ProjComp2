@@ -84,4 +84,4 @@ void stack_push(avm_memcell* stack, Symbol* s);
 Symbol* stack_top(avm_memcell* stack);
 Symbol* stack_pop(avm_memcell* stack);
 
-void append(retList* returnList, unsigned label);
+retList* append(retList* returnList, unsigned label);

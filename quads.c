@@ -199,6 +199,9 @@ void patchlabel(unsigned quadNo, unsigned label){
 }
 
 void backpatch (int list, unsigned label){
+     assert(list);
+
+     
      assert(list < currQuad );
      while (list) {
           int next = quads[list].label;

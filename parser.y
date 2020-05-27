@@ -685,7 +685,6 @@ returnstmt: 	RETURN SEMI {
                          retaddr = nextquad();
                          emit(jump, NULL, NULL, NULL, 0, yylineno);
                     }
-                    
                }
                ;
 

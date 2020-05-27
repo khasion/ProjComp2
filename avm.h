@@ -23,7 +23,7 @@ typedef enum vmopcode {
      jqt_v,              call_v,             pusharg_v,
      funcenter_v,        funcexit_v,         newtable_v,
      tablegetelem_v,     tablesetelem_v,     jump_v,
-     nop_v
+     nop_v   
 }vmopcode;
 
 typedef enum vmarg_t {
@@ -42,6 +42,7 @@ typedef enum vmarg_t {
 
 typedef struct vmarg {
      vmarg_t   type;
+     char*     id;
      unsigned  val;
 }vmarg;
 
@@ -50,6 +51,7 @@ typedef struct instruction {
      vmarg     result;
      vmarg     arg1;
      vmarg     arg2;
+     unsigned  label;
      unsigned  srcLine;
 }instruction;
 
