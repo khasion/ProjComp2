@@ -23,7 +23,7 @@ typedef struct avm_memcell {
           double              numVal;
           char*               strVal;
           unsigned char       boolVal;
-          struct avm_table*   table_val;
+          struct avm_table*   tableVal;
           unsigned            funcVal;
           char*               libfuncVal;
      } data;

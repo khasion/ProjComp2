@@ -3,7 +3,7 @@
 #include <string.h>
 #include <assert.h>
 
-#include "functions.c"
+#include "functions.h"
 
 void execute_call (instruction* instr){
   avm_memcell* func = avm_translate_operand(&instr->result , &ax);

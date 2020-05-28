@@ -3,6 +3,7 @@
 #define "mem.h"
 
 typedef char* (*tostring_func_t)(avm_memcell*);
+typedef char* (*tobool_func_t)(avm_memcell*);
 
 void execute_jeq(instruction* instr);
 void execute_jne(instruction* instr);

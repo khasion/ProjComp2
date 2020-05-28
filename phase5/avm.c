@@ -3,7 +3,14 @@
 #include <string.h>
 #include <assert.h>
 #include "avm.h"
+//#include "arith.h"
+//#include "assign.h"
+//#include "functions.h"
+//#include "relop.h"
+//#include "table.h"
+//#include "nop.h"
 
+unsigned currLine = 0, pc = 0, executionFinished = 0, totalActuals = 0;
 
 execute_func_t executeFuncs[] = {
     execute_assign,
@@ -43,6 +50,7 @@ memclear_func_t memclearFuncs[] = {
   0
 };
 
+void execute_assign(){}
 
 avm_memcell* avm_translate_operand(vmarg* arg, avm_memcell* reg){
   switch(arg->type){
@@ -53,7 +61,7 @@ avm_memcell* avm_translate_operand(vmarg* arg, avm_memcell* reg){
     case retval_a: return &retval;
     case number_a: {
       reg->type = number_m;
-      reg->data.numVal = consts_getnumber(arg->val);
+      //reg->data.numVal = consts_getnumber(arg->val); kati prepei na mpei edw 
       return reg;
     }
     case string_a: {
@@ -88,15 +96,17 @@ void execute_cycle(void) {
       return;
     }
     else{
-      assert(pc< AVM_ENDING_PC);
+      assert(pc < AVM_ENDING_PC);
       instruction* instr = code + pc;
       assert(instr->opcode >= 0 && instr->opcode <= AVM_MAX_INSTRUCTIONS);
       if (instr-> srcLine) currLine = instr->srcLine;
       unsigned oldPC = pc;
       (*executeFuncs[instr->opcode])(instr);
-      if (pc == olsPC) ++pc;
+      if (pc == oldPC) ++pc;
     }
   }
+
+double consts_getnumber (unsigned int index);
 
 void avm_memcellclear (avm_memcell* m){
   if (m->type != undef_m){
@@ -115,7 +125,7 @@ extern void memclear_string(avm_memcell* m){
 
 extern void memclear_table (avm_memcell* m){
   assert (m->data.tableVal);
-  avm_tabledecrefcounter(m->data.tableVal);
+  //avm_tabledecrefcounter(m->data.tableVal);
 }
 
 void avm_dec_top (void){
@@ -158,23 +168,26 @@ void avm_warning(char* war){
 }
 
 void avm_error(char* err){
-  printf("Error: %s", err)
+  printf("Error: %s", err);
 }
 
-void avm_initialize(){
-  avm_initstack();
-  avm_registerlibfunc("print", libfunc_print);
-  avm_registerlibfunc("input", libfunc_input);
-  avm_registerlibfunc("objectmemberkyes", libfunc_objectmemberkyes);
-  avm_registerlibfunc("objectotslmembers", libfunc_objectotslmembers);
-  avm_registerlibfunc("objectcopy", libfunc_objectcopy);
-  avm_registerlibfunc("totalarguments", libfunc_totalarguments);
-  avm_registerlibfunc("argument", libfunc_argument);
-  avm_registerlibfunc("typeof", libfunc_typeof);
-  avm_registerlibfunc("strtonum", libfunc_strtonum);
-  avm_registerlibfunc("sqrt", libfunc_sqrt);
-  avm_registerlibfunc("cos", libfunc_cos);
-  avm_registerlibfunc("sin", libfunc_sin);
+// void avm_initialize(){
+//   avm_initstack();
+//   avm_registerlibfunc("print", libfunc_print);
+//   avm_registerlibfunc("input", libfunc_input);
+//   avm_registerlibfunc("objectmemberkyes", libfunc_objectmemberkyes);
+//   avm_registerlibfunc("objectotslmembers", libfunc_objectotslmembers);
+//   avm_registerlibfunc("objectcopy", libfunc_objectcopy);
+//   avm_registerlibfunc("totalarguments", libfunc_totalarguments);
+//   avm_registerlibfunc("argument", libfunc_argument);
+//   avm_registerlibfunc("typeof", libfunc_typeof);
+//   avm_registerlibfunc("strtonum", libfunc_strtonum);
+//   avm_registerlibfunc("sqrt", libfunc_sqrt);
+//   avm_registerlibfunc("cos", libfunc_cos);
+//   avm_registerlibfunc("sin", libfunc_sin);
+// }
+
+int main(int argc, char** argv){
+  printf("Phase 5 begin\n");
+  return 0;
 }
-
-
