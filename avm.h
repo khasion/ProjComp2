@@ -57,15 +57,6 @@ typedef struct instruction {
 
 extern instruction* instructions;
 
-typedef struct incomplete_jump {
-     unsigned                 instrNo;  // The jump instruction number .
-     unsigned                 iaddress; // The i-code jump-target address.
-     struct incomplete_jump*  next;     // A trivial linked list.
-}incomplete_jump;
-
-extern incomplete_jump*    ij_head;
-extern unsigned            ij_total;
-
 unsigned nextinstructionlabel();
 
 void instructions_emit(instruction i);
@@ -109,6 +100,6 @@ extern void generate_FUNCEND (Quad*);
 void generate1();
 
 
-void print_instructions();
+void generate_bin();
 
 #endif

@@ -215,7 +215,7 @@ Symbol* idlist_id(char* yytext, unsigned yylineno) {
 Symbol* idlist_commaid(char* yytext, unsigned yylineno) {
 	Symbol* temp;
 	int flag = 0;
-	if ( (temp = table_lookup(yytext, currscope()+1))) {
+	if ( (temp = table_lookup(yytext, currscope()+1)) && !temp->hide) {
 		Error(8, yytext, yylineno);
 		flag = 1;
 	}

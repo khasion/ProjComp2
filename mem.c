@@ -104,10 +104,10 @@ unsigned consts_newnumber (double d) {
 }
 
 unsigned userfuncs_newfunc (Symbol* s) {
-     printf("ASD\n");
      userFuncs[totaluserFuncs].address = s->taddress;
      userFuncs[totaluserFuncs].localSize = s->totalLocals;
-     userFuncs[totaluserFuncs++].id = strdup(s->name);
+     userFuncs[totaluserFuncs].id = (char*) malloc(sizeof(s->name));
+     sprintf(userFuncs[totaluserFuncs++].id ,"%s", s->name);
      return totaluserFuncs - 1;
 }
 

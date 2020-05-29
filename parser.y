@@ -680,8 +680,8 @@ returnstmt: 	RETURN SEMI {
                }
                | RETURN expr SEMI {
                     if (currfuncscope() == 0) Error(2, yytext, yylineno);
-                    else{
-                         emit(ret, NULL, NULL, $2, nextquad() + 1, yylineno);
+                    else {
+                         emit(ret, $2, NULL, NULL, nextquad() + 1, yylineno);
                          retaddr = nextquad();
                          emit(jump, NULL, NULL, NULL, 0, yylineno);
                     }
@@ -722,7 +722,7 @@ int main(int argc, char** argv) {
      //print_table();
      print_intermediate();
      generate1();
-     print_instructions();
+     generate_bin();
      free_table(symtable);
      return 0;
 }

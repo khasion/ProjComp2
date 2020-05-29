@@ -1,8 +1,50 @@
 Magic: 340200501 
-jump_v 00(label), 0 			
-funcenter_v 08(userfunc), 1:f 	00 (label), 0 	00 (label), -2017500693	
-add_v 03(local), 2:^0 	02(formal), 0:x 	02(formal), 1:y 	
-assign_v 10(retval)			
-jump_v 00(label), 2 			
-jump_v 00(label), 0 		00 (label), 2	
-funcexit_v 08(userfunc), 2:f 		00 (label), -2017500693	
+N	|op                            |res                          |arg1                         |arg2                        
+0	|assign                        |01(global) 0:x               |04(num) 0:10.000000          |07(NULL)                     
+1	|assign                        |01(global) 2:^0              |01(global) 0:x               |07(NULL)                     
+2	|assign                        |01(global) 2:y               |05(string) 0:world           |07(NULL)                     
+3	|assign                        |01(global) 2:^0              |01(global) 2:y               |07(NULL)                     
+4	|jump                          |00(label) 10                 |07(NULL)                     |07(NULL)                     
+5	|enterfunc                     |08(userfunc) 5:(null)        |07(NULL)                     |07(NULL)                     
+6	|add                           |03(local) 2:^0               |02(formal) 0:x               |02(formal) 1:y               
+7	|assign                        |10(retval)                   |03(local) 2:^0               |07(NULL)                     
+8	|jump                          |00(label) 9                  |07(NULL)                     |07(NULL)                     
+9	|exitfunc                      |08(userfunc) 5:(null)        |07(NULL)                     |07(NULL)                     
+10	|jump                          |00(label) 19                 |07(NULL)                     |07(NULL)                     
+11	|enterfunc                     |08(userfunc) 11:(null)       |07(NULL)                     |07(NULL)                     
+12	|pusharg                       |08(userfunc) 11:(null)       |04(num) 1:1.000000           |07(NULL)                     
+13	|pusharg                       |08(userfunc) 11:(null)       |04(num) 2:3.000000           |07(NULL)                     
+14	|callfunc                      |08(userfunc) 11:(null)       |08(userfunc) 0:f             |07(NULL)                     
+15	|assign                        |03(local) 1:^1               |10(retval)                   |07(NULL)                     
+16	|assign                        |10(retval)                   |03(local) 1:^1               |07(NULL)                     
+17	|jump                          |00(label) 18                 |07(NULL)                     |07(NULL)                     
+18	|exitfunc                      |08(userfunc) 11:(null)       |07(NULL)                     |07(NULL)                     
+19	|pusharg                       |08(userfunc) 11:(null)       |04(num) 3:1.000000           |07(NULL)                     
+20	|pusharg                       |08(userfunc) 11:(null)       |04(num) 4:2.000000           |07(NULL)                     
+21	|callfunc                      |08(userfunc) 11:(null)       |08(userfunc) 0:f             |07(NULL)                     
+22	|assign                        |01(global) 2:^2              |10(retval)                   |07(NULL)                     
+23	|pusharg                       |01(global) 2:^2              |01(global) 2:^2              |07(NULL)                     
+24	|callfunc                      |01(global) 2:^2              |09(libfunc) 0:print          |07(NULL)                     
+25	|assign                        |01(global) 2:^3              |10(retval)                   |07(NULL)                     
+26	|pusharg                       |01(global) 2:^3              |04(num) 5:1.000000           |07(NULL)                     
+27	|callfunc                      |01(global) 2:^3              |09(libfunc) 1:print          |07(NULL)                     
+28	|assign                        |01(global) 2:^0              |10(retval)                   |07(NULL)                     
+
+stringConsts: 
+0	|world
+
+numConsts: 
+0	|10.000000
+1	|1.000000
+2	|3.000000
+3	|1.000000
+4	|2.000000
+5	|1.000000
+
+namedLibFuncs: 
+0	|print
+1	|print
+
+userfuncs: 
+0	|f: 2: 5
+1	|g: 1: 11
