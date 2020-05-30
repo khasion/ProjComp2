@@ -1,14 +1,19 @@
 #ifndef AVM_H
 #define AVM_H
 
-#define AVM_ENDING_PC 10
-#define AVM_STACKENV_SIZE 4
-#define AVM_MAX_INSTRUCTIONS (unsigned) nop_v
 #include "mem.h"
+#include "relop.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <assert.h>
 
-avm_memcell ax, bx, cx;
-avm_memcell retval;
-unsigned top, topsp;
+extern unsigned pc;
+extern unsigned char executionFinished;
+extern avm_memcell ax;
+extern avm_memcell bx;
+extern avm_memcell cx;
+extern avm_memcell retval;
 
 struct avm_table;
 typedef void (*memclear_func_t)(avm_memcell*);
@@ -47,7 +52,7 @@ typedef struct vmarg {
      unsigned  val;
 }vmarg;
 
-typedef struct Instruction {
+typedef struct instruction {
      vmopcode  opcode;
      vmarg     result;
      vmarg     arg1;
@@ -56,22 +61,56 @@ typedef struct Instruction {
      unsigned  srcLine;
 }instruction;
 
+extern instruction* code;
+
+void print_code();
+void emit_code(instruction t);
+void init_code(unsigned size);
+
+#define AVM_ENDING_PC codeSize
+#define AVM_STACKENV_SIZE 4
+#define AVM_MAX_INSTRUCTIONS (unsigned) nop_v
+
+typedef void (*library_func_t)(void);
+
 typedef void (*execute_func_t)(instruction*);
 extern execute_func_t executeFuncs[];
+avm_memcell* avm_translate_operand(vmarg* arg, avm_memcell* reg);
 
+void avm_warning(char* war);
+void avm_error(char* err);
+char* avm_tostring(avm_memcell*);
+void avm_calllibfunc(char* funcName);
+void avm_callsaveenviroment(void);
+userfunc* avm_getfuncinfo(unsigned address);
 
-
-double const_getnumber(unsigned index);
-char* consts_getstring(unsigned index);
-char* libfuncs_getused(unsigned index);
-extern void avm_warning(char* war);
-extern void avm_error(char* err);
-extern char* avm_tostring(avm_memcell*);
-extern void avm_calllibfunc(char* funcName);
-extern void avm_callsaveenviroment(void);
-extern userfunc* avm_getfuncinfo(unsigned address);
-typedef void (*library_func_t)(void);
 library_func_t avm_getlibraryfunc(char* id);
 extern void avm_assign(avm_memcell* lv, avm_memcell* rv);
 void avm_initialize();
+
+void execute_assign(instruction*);
+void execute_add(instruction*);
+void execute_sub(instruction*);
+void execute_mul(instruction*);
+void execute_div(instruction*);
+void execute_mod(instruction*);
+void execute_uminus(instruction*);
+void execute_and(instruction*);
+void execute_or(instruction*);
+void execute_not(instruction*);
+void execute_jeq(instruction*);
+void execute_jne(instruction*);
+void execute_jle(instruction*);
+void execute_jge(instruction*);
+void execute_jlt(instruction*);
+void execute_jgt(instruction*);
+void execute_call(instruction*);
+void execute_pusharg(instruction*);
+void execute_funcenter(instruction*);
+void execute_funcexit(instruction*);
+void execute_newtable(instruction*);
+void execute_tablegetelem(instruction*);
+void execute_tablesetelem(instruction*);
+void execute_nop(instruction*);
+
 #endif

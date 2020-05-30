@@ -1,50 +1,43 @@
-Magic: 340200501 
-N	|op                            |res                          |arg1                         |arg2                        
-0	|assign                        |01(global) 0:x               |04(num) 0:10.000000          |07(NULL)                     
-1	|assign                        |01(global) 2:^0              |01(global) 0:x               |07(NULL)                     
-2	|assign                        |01(global) 2:y               |05(string) 0:world           |07(NULL)                     
-3	|assign                        |01(global) 2:^0              |01(global) 2:y               |07(NULL)                     
-4	|jump                          |00(label) 10                 |07(NULL)                     |07(NULL)                     
-5	|enterfunc                     |08(userfunc) 5:(null)        |07(NULL)                     |07(NULL)                     
-6	|add                           |03(local) 2:^0               |02(formal) 0:x               |02(formal) 1:y               
-7	|assign                        |10(retval)                   |03(local) 2:^0               |07(NULL)                     
-8	|jump                          |00(label) 9                  |07(NULL)                     |07(NULL)                     
-9	|exitfunc                      |08(userfunc) 5:(null)        |07(NULL)                     |07(NULL)                     
-10	|jump                          |00(label) 19                 |07(NULL)                     |07(NULL)                     
-11	|enterfunc                     |08(userfunc) 11:(null)       |07(NULL)                     |07(NULL)                     
-12	|pusharg                       |08(userfunc) 11:(null)       |04(num) 1:1.000000           |07(NULL)                     
-13	|pusharg                       |08(userfunc) 11:(null)       |04(num) 2:3.000000           |07(NULL)                     
-14	|callfunc                      |08(userfunc) 11:(null)       |08(userfunc) 0:f             |07(NULL)                     
-15	|assign                        |03(local) 1:^1               |10(retval)                   |07(NULL)                     
-16	|assign                        |10(retval)                   |03(local) 1:^1               |07(NULL)                     
-17	|jump                          |00(label) 18                 |07(NULL)                     |07(NULL)                     
-18	|exitfunc                      |08(userfunc) 11:(null)       |07(NULL)                     |07(NULL)                     
-19	|pusharg                       |08(userfunc) 11:(null)       |04(num) 3:1.000000           |07(NULL)                     
-20	|pusharg                       |08(userfunc) 11:(null)       |04(num) 4:2.000000           |07(NULL)                     
-21	|callfunc                      |08(userfunc) 11:(null)       |08(userfunc) 0:f             |07(NULL)                     
-22	|assign                        |01(global) 2:^2              |10(retval)                   |07(NULL)                     
-23	|pusharg                       |01(global) 2:^2              |01(global) 2:^2              |07(NULL)                     
-24	|callfunc                      |01(global) 2:^2              |09(libfunc) 0:print          |07(NULL)                     
-25	|assign                        |01(global) 2:^3              |10(retval)                   |07(NULL)                     
-26	|pusharg                       |01(global) 2:^3              |04(num) 5:1.000000           |07(NULL)                     
-27	|callfunc                      |01(global) 2:^3              |09(libfunc) 1:print          |07(NULL)                     
-28	|assign                        |01(global) 2:^0              |10(retval)                   |07(NULL)                     
+_magic: 340200501 
+_code: 25
+0	|_assign                        |01,0:x                       |04,0:10.000000               |07                           
+1	|_assign                        |01,2:^0                      |01,0:x                       |07                           
+2	|_assign                        |01,2:y                       |05,0:"hello"                 |07                           
+3	|_assign                        |01,2:^0                      |01,2:y                       |07                           
+4	|_jump                          |00,12                        |07                           |07                           
+5	|_enterfunc                     |08,0:f                       |07                           |07                           
+6	|_assign                        |03,0:t                       |04,1:1.000000                |07                           
+7	|_assign                        |03,2:^0                      |03,0:t                       |07                           
+8	|_add                           |03,2:^0                      |02,0:x                       |02,1:y                       
+9	|_assign                        |10                           |03,2:^0                      |07                           
+10	|_jump                          |00,11                        |07                           |07                           
+11	|_exitfunc                      |08,0:f                       |07                           |07                           
+12	|_assign                        |01,0:z                       |05,1:"world"                 |07                           
+13	|_assign                        |01,2:^1                      |01,0:z                       |07                           
+14	|_pusharg                       |07                           |04,2:3.141500                |07                           
+15	|_callfunc                      |07                           |09,0:cos                     |07                           
+16	|_assign                        |01,2:^0                      |10                           |07                           
+17	|_assign                        |01,2:w                       |01,2:^0                      |07                           
+18	|_assign                        |01,2:^1                      |01,2:w                       |07                           
+19	|_pusharg                       |07                           |01,0:x                       |07                           
+20	|_pusharg                       |07                           |01,2:y                       |07                           
+21	|_pusharg                       |07                           |01,0:z                       |07                           
+22	|_pusharg                       |07                           |01,2:w                       |07                           
+23	|_callfunc                      |07                           |09,1:print                   |07                           
+24	|_assign                        |01,2:^0                      |10                           |07                           
 
-stringConsts: 
-0	|world
+_stringConsts: 2
+0	|"hello"
+1	|"world"
 
-numConsts: 
+_numConsts: 3
 0	|10.000000
 1	|1.000000
-2	|3.000000
-3	|1.000000
-4	|2.000000
-5	|1.000000
+2	|3.141500
 
-namedLibFuncs: 
-0	|print
-1	|print
+_namedLibFuncs: 2
+0	|"cos"
+1	|"print"
 
-userfuncs: 
-0	|f: 2: 5
-1	|g: 1: 11
+_userfuncs: 1
+0	|f: 4: 5

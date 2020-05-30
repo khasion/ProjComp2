@@ -1,16 +1,17 @@
 #ifndef RELOP_H
 #define RELOP_H
-#define "mem.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <assert.h>
+#include "mem.h"
+#include "avm.h"
 
 typedef char* (*tostring_func_t)(avm_memcell*);
-typedef char* (*tobool_func_t)(avm_memcell*);
+typedef unsigned char (*tobool_func_t)(avm_memcell*);
 
-void execute_jeq(instruction* instr);
-void execute_jne(instruction* instr);
-void execute_jle(instruction* instr);
-void execute_jge(instruction* instr);
-void execute_jlt(instruction* instr);
-void execute_jgt(instruction* instr);
+extern tostring_func_t tostringFuncs[];
+extern tobool_func_t toboolFuncs[];
 
 char* number_tostring(avm_memcell* param);
 char* strng_tostring(avm_memcell* param);

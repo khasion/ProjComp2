@@ -2616,8 +2616,8 @@ yyreduce:
 #line 681 "parser.y"
                                   {
                     if (currfuncscope() == 0) Error(2, yytext, yylineno);
-                    else{
-                         emit(ret, NULL, NULL, (yyvsp[-1].exprval), nextquad() + 1, yylineno);
+                    else {
+                         emit(ret, (yyvsp[-1].exprval), NULL, NULL, nextquad() + 1, yylineno);
                          retaddr = nextquad();
                          emit(jump, NULL, NULL, NULL, 0, yylineno);
                     }
@@ -2855,7 +2855,7 @@ int main(int argc, char** argv) {
      //print_table();
      print_intermediate();
      generate1();
-     print_instructions();
+     generate_bin();
      free_table(symtable);
      return 0;
 }

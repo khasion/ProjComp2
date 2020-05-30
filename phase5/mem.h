@@ -1,9 +1,10 @@
+#ifndef MEM_H
+#define MEM_H
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
 #include "table.h"
-#include "quads.h"
 
 typedef enum avm_memcell_t {
      number_m       = 0,
@@ -35,6 +36,9 @@ typedef struct avm_memcell {
 
 extern avm_memcell stack[AVM_STACKSIZE];
 extern unsigned top;
+extern unsigned topsp;
+
+typedef void (*memclear_func_t)(avm_memcell*);
 
 struct avm_table*   avm_tablenew(void);
 void                avm_tabledestroy (struct avm_table* t);
@@ -76,3 +80,26 @@ extern unsigned  totalNamedLibFuncs;
 
 extern userfunc* userFuncs;
 extern unsigned  totaluserFuncs;
+
+void avm_tableincrefcounter (avm_table* t);
+void avm_tabledecrefcounter (avm_table* t);
+
+void avm_memcellclear (avm_memcell* m);
+
+void memclear_string(avm_memcell*);
+void memclear_table(avm_memcell*);
+
+
+double const_getnumber(unsigned index);
+char* const_getstring(unsigned index);
+char* libfuncs_getused(unsigned index);
+
+unsigned consts_newstring (char* s);
+unsigned consts_newnumber (double d);
+unsigned userfuncs_newfunc (userfunc s);
+unsigned libfuncs_newused (char* s); 
+
+void initMem();
+
+void print_arrays();
+#endif

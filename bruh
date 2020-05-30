@@ -1,6 +1,6 @@
 x = 10;
-y = "world";
-function f(x,y) {return x + y; }
-function g(x,y,z) {return f(1, 3);}
-print(f(1,2));
-print(1);
+y = "hello";
+function f(x,y) { t = 1; return x+y; }
+z = "world";
+w = cos(3.1415);
+print(x,y,z,w);

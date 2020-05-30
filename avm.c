@@ -5,7 +5,7 @@ instruction* instructions = (instruction*) 0;
 unsigned currIns = 0;            
 unsigned totalIns = 0;          
 
-generator_func_t (generators[]) = {           
+generator_func_t (generators[]) = {
 	generate_ASSIGN ,      
 	generate_ADD ,          
      generate_SUB ,
@@ -194,6 +194,9 @@ void generate_MOD (Quad* quad)  { generate(mod_v, quad); }
 
 void generate_UMINUS (Quad* quad) {
      instruction t;
+     reset_operand(&t.arg1);
+     reset_operand(&t.arg2);
+     reset_operand(&t.result);
      t.opcode = mul_v;
      make_operand(quad->arg1, &t.arg1);
      make_numberoperand(&t.arg2, -1);
@@ -344,6 +347,9 @@ void generate_AND (Quad* quad) {
 void generate_PARAM(Quad* quad) {  
      quad->taddress = nextinstructionlabel();
      instruction t;  
+     reset_operand(&t.arg1);
+     reset_operand(&t.arg2);
+     reset_operand(&t.result);
      t.opcode = pusharg_v;
      make_operand(quad->arg1, &t.arg1);  
      instructions_emit(t); 
@@ -352,6 +358,9 @@ void generate_PARAM(Quad* quad) {
 void generate_CALL(Quad* quad) {
      quad->taddress = nextinstructionlabel();  
      instruction t;  
+     reset_operand(&t.arg1);
+     reset_operand(&t.arg2);
+     reset_operand(&t.result);
      t.opcode = call_v;  
      make_operand(quad->arg1, &t.arg1);
      instructions_emit(t); 
@@ -359,6 +368,9 @@ void generate_CALL(Quad* quad) {
 void generate_GETRETVAL(Quad* quad) {
      quad->taddress = nextinstructionlabel();
      instruction t;
+     reset_operand(&t.arg1);
+     reset_operand(&t.arg2);
+     reset_operand(&t.result);
      t.opcode = assign_v;
      make_operand(quad->result, &t.result);  
      make_retvaloperand(&t.arg1);  
@@ -371,15 +383,18 @@ void generate_FUNCSTART(Quad* quad){
      f->taddress = nextinstructionlabel();
      quad->taddress = nextinstructionlabel();
  
-     userfuncs_newfunc(f);
-     stack_push(stack, f);
 
      instruction t;
+     reset_operand(&t.arg1);
+     reset_operand(&t.arg2);
+     reset_operand(&t.result);
+
      t.opcode = funcenter_v;
      make_operand(quad->arg1 , &t.result);
 
-     reset_operand(&t.arg1);
-     reset_operand(&t.arg2);
+     t.result.val = userfuncs_newfunc(f);
+     stack_push(stack, f);
+
      instructions_emit(t);
 }
 
@@ -409,10 +424,11 @@ void generate_FUNCEND(Quad* quad){
      instruction t;
      reset_operand(&t.arg1);
      reset_operand(&t.arg2);
-     stack_pop(stack);
+     Symbol* f = stack_pop(stack);
      quad->taddress = nextinstructionlabel();
      t.opcode = funcexit_v;
      make_operand(quad->arg1 , &t.result);
+     t.result.val = instructions[f->taddress].result.val;
      instructions_emit(t);
 }
 
@@ -430,32 +446,32 @@ void print_instructions(FILE* fp, vmarg arg) {
           char* str;
           str = (char*) malloc(sizeof(char)*30);
           switch ( arg.type) {
-               case label_a        : sprintf(str, "|00(label) %d", arg.val); break;
-               case global_a       : sprintf(str, "|01(global) %d:%s", arg.val ,arg.id); break;
-               case formal_a       : sprintf(str, "|02(formal) %d:%s", arg.val ,arg.id); break;
-               case local_a        : sprintf(str, "|03(local) %d:%s", arg.val ,arg.id); break;
-               case bool_a         : sprintf(str, "|06(boolean) %d:%s", arg.val ,arg.id); break;
-               case retval_a       : sprintf(str, "|10(retval)") ; break;
-               case nil_a          : sprintf(str, "|07(NULL)"); break;
-               case number_a       : sprintf(str, "|04(num) %d:%f", arg.val, numConsts[arg.val]); break;
-               case string_a       : sprintf(str, "|05(string) %d:%s", arg.val, stringConsts[arg.val]); break;
-               case userfunc_a     : sprintf(str, "|08(userfunc) %d:%s", arg.val, userFuncs[arg.val].id); break;
-               case libfunc_a      : sprintf(str, "|09(libfunc) %d:%s", arg.val,namedLibfuncs[arg.val]); break;
-               default             : assert(0);
+               case label_a        : sprintf(str, "|00,%d", arg.val); break;
+               case global_a       : sprintf(str, "|01,%d:%s", arg.val ,arg.id); break;
+               case formal_a       : sprintf(str, "|02,%d:%s", arg.val ,arg.id); break;
+               case local_a        : sprintf(str, "|03,%d:%s", arg.val ,arg.id); break;
+               case bool_a         : sprintf(str, "|06,%d:%s", arg.val ,arg.id); break;
+               case retval_a       : sprintf(str, "|10") ; break;
+               case nil_a          : sprintf(str, "|07"); break;
+               case number_a       : sprintf(str, "|04,%d:%f", arg.val, numConsts[arg.val]); break;
+               case string_a       : sprintf(str, "|05,%d:\"%s\"", arg.val, stringConsts[arg.val]); break;
+               case userfunc_a     : sprintf(str, "|08,%d:%s", arg.val, userFuncs[arg.val].id); break;
+               case libfunc_a      : sprintf(str, "|09,%d:%s", arg.val,namedLibfuncs[arg.val]); break;
+               default             : return;
           }
           fprintf(fp, "%-30s", str);
 }
 
 void print_string(FILE* fp) {
-     fprintf(fp, "\nstringConsts: \n");
+     fprintf(fp, "\n_stringConsts: %d\n", totalStringConsts);
      for (int i = 0; i < totalStringConsts; i++) {
           fprintf(fp, "%d\t", i);
-          fprintf(fp, "|%s\n", stringConsts[i]);
+          fprintf(fp, "|\"%s\"\n", stringConsts[i]);
      }
 }
 
 void print_num(FILE* fp) {
-     fprintf(fp, "\nnumConsts: \n");
+     fprintf(fp, "\n_numConsts: %d\n", totalNumConsts);
      for (int i = 0; i < totalNumConsts; i++) {
           fprintf(fp, "%d\t", i);
           fprintf(fp, "|%f\n", numConsts[i]);
@@ -463,15 +479,15 @@ void print_num(FILE* fp) {
 }
 
 void print_libfuncs(FILE* fp) {
-     fprintf(fp, "\nnamedLibFuncs: \n");
+     fprintf(fp, "\n_namedLibFuncs: %d\n", totalNamedLibFuncs);
      for (int i = 0; i < totalNamedLibFuncs; i++) {
           fprintf(fp, "%d\t", i);
-          fprintf(fp, "|%s\n", namedLibfuncs[i]);
+          fprintf(fp, "|\"%s\"\n", namedLibfuncs[i]);
      }
 }
 
 void print_userfuncs(FILE* fp) {
-     fprintf(fp, "\nuserfuncs: \n");
+     fprintf(fp, "\n_userfuncs: %d\n", totaluserFuncs);
      for (int i = 0; i < totaluserFuncs; i++) {
           fprintf(fp, "%d\t", i);
           fprintf(fp, "|%s: %d: %d\n", userFuncs[i].id, userFuncs[i].localSize, userFuncs[i].address);
@@ -488,7 +504,7 @@ void print_consts(FILE* fp) {
 void generate_bin() {
      char* opcodes[25] = {
      "assign",           "add",              "sub",
-     "mul",              "div_v",            "mod",
+     "mul",              "div",              "mod",
      "uminus",           "and",              "or",
      "not",              "jeq",              "jne",
      "jle",              "jge",              "jlt",
@@ -500,14 +516,14 @@ void generate_bin() {
      FILE* fp = stdout;
      unsigned magic = 340200501;
      fp = fopen("mikriloulou.abc", "wb");
-     fprintf(fp, "Magic: %d \n", magic);
-     fprintf(fp, "N\t%-30s%-30s%-30s%-30s\n", "|op", " |res", " |arg1", " |arg2");
+     fprintf(fp, "_magic: %d \n", magic);
+     fprintf(fp, "_code: %d\n", nextinstructionlabel());
      for ( int i = 0; i < nextinstructionlabel(); i++) {
           vmarg res = (instructions + i)->result;
           vmarg arg1 = (instructions + i)->arg1;
           vmarg arg2 = (instructions + i)-> arg2;
           fprintf(fp, "%d\t", i);
-          fprintf(fp, "|%-30s", opcodes[instructions[i].opcode]);
+          fprintf(fp, "|_%-30s", opcodes[instructions[i].opcode]);
           print_instructions(fp, res);
           print_instructions(fp, arg1);
           print_instructions(fp, arg2);
