@@ -3,7 +3,6 @@
      #include <unistd.h>
      #include <stdlib.h>
      #include <string.h>
-     #include "mem.h"
      #include "avm.h"
 
      #define  YY_DECL int alpha_yylex (void* yylval)
@@ -29,10 +28,11 @@
 %token <intval>     INT
 %token <strval>     ID TEMP MAGIC CODE STRINGARRAY NUMARRAY 
 %token <strval>     LIBARRAY USERFUNCARRAY STRING
-%token <strval>     OPCODE
+%token <strval>     ASSIGN ADD SUB MUL DIV MOD UMINUS AND OR NOT JEQ JNE JLE JGE JLT JGT CALLFUNC PUSHARG
+%token <strval>     ENTERFUNC EXITFUNC NEWTABLE TABLESETELEM TABLEGETELEM JUMP NOP
 %token <strval>     COLON COMMA BAR NONAME 
 
-%type <intval> avmbinaryfile magicnumber codes arrays
+%type <intval> avmbinaryfile magicnumber codes arrays opcode
 %type <intval> stringConsts numConsts namedLibFuncs userfuncs 
 
 %type <instruct> instructions instruction
@@ -58,21 +58,48 @@ avmbinaryfile: magicnumber codes arrays {
 magicnumber:   MAGIC COLON INT {$$ = $3;}
                ;
 
-codes:     CODE COLON INT{init_code($3+1);} instructions{ }; 
+codes:     CODE COLON INT{init_code($3);} instructions{;}; 
 
 instructions:  instruction {;}
                | instructions instruction {;}
                ;
 
-instruction:   INT BAR OPCODE operand operand operand {
+instruction:   INT BAR opcode operand operand operand {
                     $$ = (instruction*) malloc(sizeof(instruction));
-                    $$->opcode = atoi($3);
+                    $$->opcode = $3;
                     $$->result = *$4;
                     $$->arg2 = *$6;
                     $$->arg1 = *$5;
                     emit_code(*$$);
-               ;}
+               }
                ;
+
+opcode:   ASSIGN{$$ = 0;}
+          | ADD{$$ = 1;}
+          | SUB{$$ = 2;}
+          | MUL{$$ = 3;}
+          | DIV{$$ = 4;}
+          | MOD{$$ = 5;}
+          | UMINUS{$$ = 6;}
+          | AND{$$ = 7;}
+          | OR{$$ = 8;}
+          | NOT{ $$ = 9;}
+          | JEQ{ $$ = 10;}
+          | JNE{ $$ = 11;}
+          | JLE{ $$ = 12;}
+          | JGE{ $$ = 13;}
+          | JLT{ $$ = 14;}
+          | JGT{ $$ = 15;}
+          | CALLFUNC{ $$ = 16;}
+          | PUSHARG{ $$ = 17;}
+          | ENTERFUNC{ $$ = 18;}
+          | EXITFUNC{ $$ = 19;}
+          | NEWTABLE{ $$ = 20;}
+          | TABLESETELEM{$$ = 21;}
+          | TABLEGETELEM{ $$ = 22;}
+          | JUMP{ $$ = 23;}
+          | NOP{ $$ = 24;}
+          ;
 
 operand:  BAR INT COMMA INT COLON ID {
                $$ = (vmarg*) malloc(sizeof(vmarg));
@@ -126,6 +153,7 @@ arrays:   stringConsts numConsts namedLibFuncs userfuncs {;}
           ;
 
 stringConsts:  STRINGARRAY COLON INT strings {;}
+               | {;}
                ;
 
 strings:  string{ $$ = $1;}
@@ -138,6 +166,7 @@ string:   INT BAR STRING {
           ;
 
 numConsts:     NUMARRAY COLON INT nums {;}
+               | {;}
                ;
 
 nums:     num {;}
@@ -148,6 +177,7 @@ num:      INT BAR REAL {
           };
 
 namedLibFuncs: LIBARRAY COLON INT libfuncs{;}
+               | {;}
                ;
 
 libfuncs:      libfunc {;}
@@ -158,6 +188,7 @@ libfunc:       INT BAR STRING {
                }
 
 userfuncs:     USERFUNCARRAY COLON INT funcs {;}
+               | {;}
                ;
 
 funcs:    func {;}
@@ -188,6 +219,7 @@ void yyerror(char* yaccProvidedMessage) {
 
 int main(int argc, char** argv){
      initMem();
+     avm_initstack();
      if(argc > 1){
           if(!(yyin = fopen(argv[1], "r"))){
                fprintf(stderr, "Cannot read  file: %s\n", argv[1]);
@@ -197,7 +229,9 @@ int main(int argc, char** argv){
           yyin = stdin;
      }
      yyparse();
-     print_arrays();
-     print_code();
+     //print_arrays();
+     //print_code();
+     execute_cycle();
+     //print_arrays();
      return 0;
 }

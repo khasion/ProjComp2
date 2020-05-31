@@ -1,5 +1,5 @@
 #include "avm.h"
-#include "table.h"
+
 unsigned currLine = 0;
 unsigned pc = 0;
 unsigned char executionFinished = 0;
@@ -71,7 +71,7 @@ void print_operand(vmarg arg) {
 
 void print_code () {
      for (int i = 0; i < codeSize; i++) {
-          printf("%d", code[i].opcode);
+          printf("%d ", code[i].opcode);
           print_operand(code[i].result);
           print_operand(code[i].arg1);
           print_operand(code[i].arg2);
@@ -80,20 +80,21 @@ void print_code () {
 }
 
 avm_memcell* avm_translate_operand(vmarg* arg, avm_memcell* reg){
+     if (!reg) reg = (avm_memcell*) malloc(sizeof(avm_memcell));
      switch(arg->type){
           /*Variables*/
           case global_a: return &stack[AVM_STACKSIZE-1-arg->val];
-          case local_a: return &stack[topsp-arg->val];
+          case local_a:  return &stack[topsp-arg->val];
           case formal_a: return &stack[topsp+AVM_STACKENV_SIZE+1+arg->val];
           case retval_a: return &retval;
           case number_a: {
                reg->type = number_m;
-               //reg->data.numVal = consts_getnumber(arg->val); kati prepei na mpei edw
+               reg->data.numVal = const_getnumber(arg->val);
                return reg;
           }
           case string_a: {
                reg->type = string_m;
-               reg->data.strVal = strdup(const_getstring(arg->val));
+               reg->data.strVal = strdup(stringConsts[arg->val]);
                return reg;
           }
           case bool_a: {
@@ -118,66 +119,34 @@ avm_memcell* avm_translate_operand(vmarg* arg, avm_memcell* reg){
 
 void execute_cycle(void) {
      if(executionFinished) return;
-     else if(pc == AVM_ENDING_PC ){
+     else if(pc == AVM_ENDING_PC){
           executionFinished = 1;
           return;
      }
-     else{
+     else {
           assert(pc < AVM_ENDING_PC );
           instruction* instr = code + pc;
           assert(instr->opcode >= 0 && instr->opcode <= AVM_MAX_INSTRUCTIONS);
-          if (instr-> srcLine) currLine = instr->srcLine;
+          if (instr-> srcLine) {
+               currLine = instr->srcLine;
+          }
           unsigned oldPC = pc;
           (*executeFuncs[instr->opcode])(instr);
-          if (pc == oldPC) ++pc;
+          if (pc == oldPC) {
+               ++pc;
+          }
      }
+     execute_cycle();
 }
 
 double consts_getnumber (unsigned int index);
-
-
-
-void avm_dec_top (void){
-     if(!top){/*stack overflow*/
-          avm_error("stack overflow");
-          executionFinished = 1;
-     }
-     else --top;
-}
-
-void avm_push_envvalue (unsigned val){
-     stack[top].type = number_m;
-     stack[top].data.numVal = val;
-     avm_dec_top();
-}
-
-
-unsigned avm_get_envvalue (unsigned i ){
-     assert(stack[i].type == number_m);
-     unsigned val = (unsigned) stack[i].data.numVal;
-     assert((stack[i].data.numVal) == ((double) val));
-     return val;
-}
-
-void execute_pusharg(instruction* instr){
-     avm_memcell* arg = avm_translate_operand(&instr->arg1, &ax);
-     assert(arg);
-     avm_assign(&stack[top], arg);
-     ++totalActuals;
-     avm_dec_top();
-}
-
-unsigned char avm_tobool (avm_memcell* m){
-     assert(m->type >= 0 && m->type < undef_m);
-     return (*toboolFuncs[m->type]) (m);
-}
 
 void avm_warning(char* war){
      printf("Warning: %s", war);
 }
 
-void avm_error(char* err){
-     printf("Error: %s", err);
+void avm_error(char* err, void *content) {
+     printf(err, content);
 }
 
 void avm_assign (avm_memcell* lv, avm_memcell* rv){
@@ -193,61 +162,46 @@ void avm_assign (avm_memcell* lv, avm_memcell* rv){
 void execute_assign (instruction* instr) {
      avm_memcell* lv = avm_translate_operand(&instr->result , (avm_memcell*)0);
      avm_memcell* rv = avm_translate_operand(&instr->arg1 , &ax);
-
-     assert(lv && ( &stack[AVM_STACKSIZE-1] <= lv && lv > &stack[top] || lv==&retval));
-     assert(rv); //should do similar assertion tests here
+     assert(lv);
+     //assert(&stack[AVM_STACKSIZE-1] <= lv);
+     //assert(lv > &stack[top] || lv==&retval);
+     //assert(lv && ( &stack[AVM_STACKSIZE-1] <= lv && lv > &stack[top] || lv==&retval));
+     //assert(rv); //should do similar assertion tests here
 
      avm_assign(lv,rv);
 }
-void execute_add(instruction* t) {
 
-}
-void execute_sub(instruction* t) {
+void execute_uminus(instruction* t){}
+void execute_and(instruction* t) {}
+void execute_or(instruction* t) {}
+void execute_not(instruction* t) {}
 
-}
-void execute_mul(instruction* t) {
-
-}
-void execute_div(instruction* t) {
-
-}
-void execute_mod(instruction* t) {
-
-}
-void execute_uminus(instruction* t) {
-
-}
-void execute_and(instruction* t) {
-
-}
-void execute_or(instruction* t) {
-
-}
-void execute_not(instruction* t) {
-
-}
 void execute_jeq(instruction* instr){
-  assert(instr->result.type == label_a);
+     assert(instr->result.type == label_a);
 
-	avm_memcell* rv1 = avm_translate_operand(&instr->arg1, &ax);
+     avm_memcell* rv1 = avm_translate_operand(&instr->arg1, &ax);
 	avm_memcell* rv2 = avm_translate_operand(&instr->arg2, &bx);
-  unsigned char result = 0;
+     unsigned char result = 0;
 
-  if (rv1->type == undef_m || rv2->type == undef_m){
-		avm_error("'Undef' involved in equality!");
-	}else if(rv1->type == nil_m || rv2->type == nil_m){
+     if (rv1->type == undef_m || rv2->type == undef_m) {
+          avm_error("'Undef' involved in equality!", "");
+	}
+     else if(rv1->type == nil_m || rv2->type == nil_m) {
 		result = (rv1->type == nil_m) && (rv2->type == nil_m);
-	}else if(rv1->type == bool_m || rv2->type == bool_m){
+	}
+     else if(rv1->type == bool_m || rv2->type == bool_m) {
 		result=rv1->data.boolVal == rv2->data.boolVal;
-	}else if(rv1->type !=rv2->type){
-		avm_error("String is illegal!");
-	}else{
+	} 
+     else if(rv1->type !=rv2->type) {
+		avm_error("String is illegal!", "");
+	}
+     else {
     //kati tha to broume
-  }
+     }
 
-  if(!executionFinished && result){
-    pc = instr->result.val;
-  }
+     if(!executionFinished && result){
+          pc = instr->result.val;
+     }
 }
 void execute_jne(instruction* t) {
 
@@ -262,15 +216,6 @@ void execute_jlt(instruction* t) {
 
 }
 void execute_jgt(instruction* t) {
-
-}
-void execute_call(instruction* t ) {
-
-}
-void execute_funcenter(instruction* t) {
-
-}
-void execute_funcexit(instruction* t) {
 
 }
 

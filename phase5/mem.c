@@ -1,9 +1,5 @@
 #include "mem.h"
 
-avm_memcell stack[AVM_STACKSIZE];
-unsigned top = 4095;
-unsigned topsp = 4095;
-
 double*   numConsts;
 char**    stringConsts;
 char**    namedLibfuncs;
@@ -25,15 +21,7 @@ memclear_func_t (memclearFuncs[]) = {
      0
 };
 
-static void avm_initstack (void) {
-     for (unsigned i=0; i<AVM_STACKSIZE; ++i) {
-          AVM_WIPEOUT(stack[i]);
-          stack[i].type = undef_m;
-     }
-}
-
 void initMem (void) {
-     avm_initstack();
      numConsts = (double*) malloc(sizeof(double)*1024);
      stringConsts = (char**) malloc(sizeof(char)*1024);
      namedLibfuncs = (char**) malloc(sizeof(char)*1024);
@@ -43,6 +31,35 @@ void initMem (void) {
           stringConsts[i] = NULL;
           namedLibfuncs[i] = NULL;
      }
+}
+
+avm_memcell* avm_tablegetelem (avm_memcell* t, avm_memcell* index) {
+     avm_table_bucket* p;
+     switch (t->type) {
+          case number_m       : p = (t->data.tableVal->numIndexed[(int)numConsts[(int)index->data.numVal]]);
+          case string_m       : p = (t->data.tableVal->strIndexed[(int)numConsts[(int)index->data.numVal]]);
+          case bool_m         : p = (t->data.tableVal->boolIndexed[(int)numConsts[(int)index->data.numVal]]);
+          case userfunc_m     : p = (t->data.tableVal->userFuncIndexed[(int)numConsts[(int)index->data.numVal]]);
+          case libfunc_m      : p = (t->data.tableVal->libFuncIndexed[(int)numConsts[(int)index->data.numVal]]);
+          default             : assert(0);
+     }
+     return &p->value;
+}
+
+void avm_tablesetelem (avm_memcell* t, avm_memcell* index, avm_memcell* content) {
+     avm_table_bucket* p;
+     switch (t->type) {
+          case number_m       : p = (t->data.tableVal->numIndexed[(int)numConsts[(int)index->data.numVal]]); break;
+          case string_m       : p = (t->data.tableVal->strIndexed[(int)numConsts[(int)index->data.numVal]]); break;
+          case bool_m         : p = (t->data.tableVal->boolIndexed[(int)numConsts[(int)index->data.numVal]]); break;
+          case userfunc_m     : p = (t->data.tableVal->userFuncIndexed[(int)numConsts[(int)index->data.numVal]]); break;
+          case libfunc_m      : p = (t->data.tableVal->libFuncIndexed[(int)numConsts[(int)index->data.numVal]]); break;
+          default             : assert(0);
+     }
+     p->key = *index;
+     p->value = *content;
+     p->next = NULL;
+     t->data.tableVal->total++;
 }
 
 void avm_tableincrefcounter (avm_table* t) {
@@ -57,8 +74,10 @@ void avm_tabledecrefcounter (avm_table* t) {
 }
 
 void avm_tablebucketsinit (avm_table_bucket** p) {
+     p = (avm_table_bucket**) malloc(sizeof(avm_table_bucket)*AVM_TABLE_HASHSIZE);
      for (unsigned i=0; i < AVM_TABLE_HASHSIZE; ++i) {
-          p[i] = (avm_table_bucket*) 0;
+          p[i] = (avm_table_bucket*) malloc(sizeof(avm_table_bucket));
+          p[i] = NULL;
      }
 }
 
@@ -120,6 +139,10 @@ void avm_tabledestroy (avm_table* t) {
 
 char* const_getstring(unsigned val) {
      return stringConsts[val];
+}
+
+double const_getnumber(unsigned val) {
+     return numConsts[val];
 }
 
 char* libfuncs_getused(unsigned val) {

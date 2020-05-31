@@ -4,12 +4,13 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
-#include "mem.h"
 #include "avm.h"
 
+typedef unsigned char (*cmp_func_t)(avm_memcell*, avm_memcell*);
 typedef char* (*tostring_func_t)(avm_memcell*);
 typedef unsigned char (*tobool_func_t)(avm_memcell*);
 
+extern cmp_func_t cmpFuncs[];
 extern tostring_func_t tostringFuncs[];
 extern tobool_func_t toboolFuncs[];
 
@@ -30,10 +31,15 @@ unsigned char userfunc_tobool (avm_memcell* m);
 unsigned char libfunc_tobool (avm_memcell* m);
 unsigned char nil_tobool (avm_memcell* m);
 unsigned char undef_tobool (avm_memcell* m);
+
 unsigned char avm_tobool(avm_memcell* m);
-
-
 char* avm_tostring(avm_memcell* m);
-unsigned char avm_tobool(avm_memcell* m);
+
+unsigned char avm_eq(avm_memcell* arg1, avm_memcell* arg2);
+unsigned char avm_neq(avm_memcell* arg1, avm_memcell* arg2);
+unsigned char avm_lt(avm_memcell* arg1, avm_memcell* arg2);
+unsigned char avm_gt(avm_memcell* arg1, avm_memcell* arg2);
+unsigned char avm_gte(avm_memcell* arg1, avm_memcell* arg2);
+unsigned char avm_lte(avm_memcell* arg1, avm_memcell* arg2);
 
 #endif

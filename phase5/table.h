@@ -1,7 +1,9 @@
 #ifndef TABLE_H
 #define TABLE_H
 #include "avm.h"
-#include "mem.h"
+
+
+extern char* typeStrings[];
 
 void execute_newtable(instruction* instr);
 void execute_tablegetelem(instruction* instr);

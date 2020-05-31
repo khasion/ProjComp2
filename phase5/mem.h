@@ -4,7 +4,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
-#include "table.h"
 
 typedef enum avm_memcell_t {
      number_m       = 0,
@@ -27,23 +26,18 @@ typedef struct avm_memcell {
           struct avm_table*   tableVal;
           unsigned            funcVal;
           char*               libfuncVal;
-     } data;
-} avm_memcell;
+     }data;
+}avm_memcell;
 
 #define AVM_CONSTSIZE    1024
-#define AVM_STACKSIZE    4096
 #define AVM_WIPEOUT(m)   memset( &(m), 0, sizeof(m))
-
-extern avm_memcell stack[AVM_STACKSIZE];
-extern unsigned top;
-extern unsigned topsp;
 
 typedef void (*memclear_func_t)(avm_memcell*);
 
 struct avm_table*   avm_tablenew(void);
 void                avm_tabledestroy (struct avm_table* t);
-avm_memcell*        avm_tablegetelem (avm_memcell* key);
-void                avm_tablesetelem (avm_memcell* key, avm_memcell* value);
+avm_memcell*        avm_tablegetelem (avm_memcell* t, avm_memcell* index);
+void                avm_tablesetelem (avm_memcell* t, avm_memcell* index, avm_memcell* content);
 
 #define AVM_TABLE_HASHSIZE    211
 
@@ -68,6 +62,9 @@ typedef struct userfunc {
      unsigned  localSize;
      char*     id;
 }userfunc;
+
+typedef void (*memclear_func_t)(avm_memcell*);
+extern memclear_func_t memclearFuncs[];
 
 extern double*   numConsts;
 extern unsigned  totalNumConsts;
@@ -102,4 +99,5 @@ unsigned libfuncs_newused (char* s);
 void initMem();
 
 void print_arrays();
+
 #endif

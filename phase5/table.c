@@ -1,8 +1,19 @@
 #include "table.h"
 
+char* typeStrings[] = {
+     "number_m",
+     "string_m",
+     "bool_m",
+     "table_m",
+     "userfunc_m",
+     "libfunc_m",
+     "nil_m",
+     "undef_m"
+};
+
 void execute_newtable(instruction* instr){
      avm_memcell* lv = avm_translate_operand(&instr->result, (avm_memcell*)0);
-     assert(lv && (&stack[AVM_STACKSIZE] >= lv && lv > &stack[top] || lv == &retval));
+     assert(lv && (&stack[0] <= lv && &stack[top] > lv || lv == &retval));
      avm_memcellclear(lv);
      lv->type = table_m;
      lv->data.tableVal = avm_tablenew();
@@ -16,9 +27,9 @@ void execute_tablesetelem(instruction* instr){
      assert(t && &stack[AVM_STACKSIZE] >= t && t > &stack[top]);
      assert(i && c);
      if(t->type != table_m){
-          avm_error("illegal use of type %s as table", typeStrings[t->type]);
+          avm_error("illegal use of type %s as table!", typeStrings[t->type]);
      }else{
-          avm_tablesetelem(t->data.tableVal, i);
+          avm_tablesetelem(t, i, c);
      }
 }
 
@@ -35,10 +46,10 @@ void execute_tablegetelem(instruction* instr){
      lv->type = nil_m;
 
      if (t->type !=table_m){
-          avm_error("illegal use of type %s as table!" , typeStrings[t->type]);
+          avm_error("illegal use of type %s as table!", typeStrings[t->type]);
      }
      else{
-          avm_memcell* content = avm_tablegetelem(t->data.tableVal);
+          avm_memcell* content = avm_tablegetelem(t, i);
           if(content) {
                avm_assign(lv , content);
           }

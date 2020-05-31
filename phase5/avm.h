@@ -1,12 +1,14 @@
 #ifndef AVM_H
 #define AVM_H
 
-#include "mem.h"
-#include "relop.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
+#include "mem.h"
+#include "relop.h"
+#include "arith.h"
+#include "functions.h"
 
 extern unsigned pc;
 extern unsigned char executionFinished;
@@ -14,10 +16,8 @@ extern avm_memcell ax;
 extern avm_memcell bx;
 extern avm_memcell cx;
 extern avm_memcell retval;
-
-struct avm_table;
-typedef void (*memclear_func_t)(avm_memcell*);
-extern memclear_func_t memclearFuncs[];
+extern unsigned totalActuals;
+extern unsigned codeSize;
 
 typedef enum vmopcode {
      assign_v,           add_v,              sub_v,
@@ -71,29 +71,22 @@ void init_code(unsigned size);
 #define AVM_STACKENV_SIZE 4
 #define AVM_MAX_INSTRUCTIONS (unsigned) nop_v
 
-typedef void (*library_func_t)(void);
 
 typedef void (*execute_func_t)(instruction*);
 extern execute_func_t executeFuncs[];
+
 avm_memcell* avm_translate_operand(vmarg* arg, avm_memcell* reg);
 
 void avm_warning(char* war);
-void avm_error(char* err);
-char* avm_tostring(avm_memcell*);
-void avm_calllibfunc(char* funcName);
-void avm_callsaveenviroment(void);
-userfunc* avm_getfuncinfo(unsigned address);
+void avm_error(char* err, void* content);
 
-library_func_t avm_getlibraryfunc(char* id);
-extern void avm_assign(avm_memcell* lv, avm_memcell* rv);
+
+void execute_cycle (void);
+
+void avm_assign(avm_memcell* lv, avm_memcell* rv);
 void avm_initialize();
 
 void execute_assign(instruction*);
-void execute_add(instruction*);
-void execute_sub(instruction*);
-void execute_mul(instruction*);
-void execute_div(instruction*);
-void execute_mod(instruction*);
 void execute_uminus(instruction*);
 void execute_and(instruction*);
 void execute_or(instruction*);
@@ -104,13 +97,10 @@ void execute_jle(instruction*);
 void execute_jge(instruction*);
 void execute_jlt(instruction*);
 void execute_jgt(instruction*);
-void execute_call(instruction*);
-void execute_pusharg(instruction*);
-void execute_funcenter(instruction*);
-void execute_funcexit(instruction*);
 void execute_newtable(instruction*);
 void execute_tablegetelem(instruction*);
 void execute_tablesetelem(instruction*);
 void execute_nop(instruction*);
+
 
 #endif
