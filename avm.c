@@ -446,17 +446,17 @@ void print_instructions(FILE* fp, vmarg arg) {
           char* str;
           str = (char*) malloc(sizeof(char)*30);
           switch ( arg.type) {
-               case label_a        : sprintf(str, "|00,%d", arg.val); break;
-               case global_a       : sprintf(str, "|01,%d:%s", arg.val ,arg.id); break;
-               case formal_a       : sprintf(str, "|02,%d:%s", arg.val ,arg.id); break;
-               case local_a        : sprintf(str, "|03,%d:%s", arg.val ,arg.id); break;
-               case bool_a         : sprintf(str, "|06,%d:%s", arg.val ,arg.id); break;
+               case label_a        : sprintf(str, "|0,%d", arg.val); break;
+               case global_a       : sprintf(str, "|1,%d:%s", arg.val ,arg.id); break;
+               case formal_a       : sprintf(str, "|2,%d:%s", arg.val ,arg.id); break;
+               case local_a        : sprintf(str, "|3,%d:%s", arg.val ,arg.id); break;
+               case bool_a         : sprintf(str, "|6,%d:%s", arg.val ,arg.id); break;
                case retval_a       : sprintf(str, "|10") ; break;
-               case nil_a          : sprintf(str, "|07"); break;
-               case number_a       : sprintf(str, "|04,%d:%f", arg.val, numConsts[arg.val]); break;
-               case string_a       : sprintf(str, "|05,%d:\"%s\"", arg.val, stringConsts[arg.val]); break;
-               case userfunc_a     : sprintf(str, "|08,%d:%s", arg.val, userFuncs[arg.val].id); break;
-               case libfunc_a      : sprintf(str, "|09,%d:%s", arg.val,namedLibfuncs[arg.val]); break;
+               case nil_a          : sprintf(str, "|7"); break;
+               case number_a       : sprintf(str, "|4,%d:%f", arg.val, numConsts[arg.val]); break;
+               case string_a       : sprintf(str, "|5,%d:\"%s\"", arg.val, stringConsts[arg.val]); break;
+               case userfunc_a     : sprintf(str, "|8,%d:%s", arg.val, userFuncs[arg.val].id); break;
+               case libfunc_a      : sprintf(str, "|9,%d:%s", arg.val,namedLibfuncs[arg.val]); break;
                default             : return;
           }
           fprintf(fp, "%-30s", str);

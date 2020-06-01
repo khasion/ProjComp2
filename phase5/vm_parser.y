@@ -27,14 +27,14 @@
      struct vmarg* vmargval;
 }
 %token <dblval>     REAL
-%token <intval>     INT
+%token <intval>     INT 
 %token <strval>     ID TEMP MAGIC CODE STRINGARRAY NUMARRAY 
 %token <strval>     LIBARRAY USERFUNCARRAY STRING
 %token <strval>     ASSIGN ADD SUB MUL DIV MOD UMINUS AND OR NOT JEQ JNE JLE JGE JLT JGT CALLFUNC PUSHARG
-%token <strval>     ENTERFUNC EXITFUNC NEWTABLE TABLESETELEM TABLEGETELEM JUMP NOP
-%token <strval>     COLON COMMA BAR NONAME 
+%token <strval>     ENTERFUNC EXITFUNC NEWTABLE TABLESETELEM TABLEGETELEM JUMP NOP 
+%token <strval>     COLON COMMA BAR NONAME TRUE FALSE
 
-%type <intval> avmbinaryfile magicnumber codes arrays opcode
+%type <intval> avmbinaryfile magicnumber codes arrays opcode 
 %type <intval> stringConsts numConsts namedLibFuncs userfuncs 
 
 %type <instruct> instructions instruction
@@ -99,7 +99,7 @@ opcode:   ASSIGN{$$ = 0;}
           | NEWTABLE{ $$ = 20;}
           | TABLESETELEM{$$ = 21;}
           | TABLEGETELEM{ $$ = 22;}
-          | JUMP{ $$ = 23;}
+          | JUMP{$$ = 23;}
           | NOP{ $$ = 24;}
           ;
 
@@ -112,7 +112,7 @@ operand:  BAR INT COMMA INT COLON ID {
                     globalSize++;
                }
           }
-          | BAR INT COMMA INT COLON TEMP {
+               | BAR INT COMMA INT COLON TEMP {
                $$ = (vmarg*) malloc(sizeof(vmarg));
                $$->val = $4;
                $$->id = strdup($6);
@@ -129,11 +129,6 @@ operand:  BAR INT COMMA INT COLON ID {
                $$->type = $2;
 
           }
-          | BAR INT COMMA INT {
-               $$ = (vmarg*) malloc(sizeof(vmarg));
-               $$->val = $4;
-               $$->type = $2;
-               }
           | BAR INT COMMA INT COLON STRING {
                $$ = (vmarg*) malloc(sizeof(vmarg));
                $$->val = $4;
@@ -146,8 +141,25 @@ operand:  BAR INT COMMA INT COLON ID {
                $$->id = strdup($6);
                $$->type = $2;
           }
-          | BAR INT {
+          |BAR INT COMMA INT COLON TRUE{
+               $$=(vmarg*)malloc(sizeof(vmarg));
+               $$->type = $2;
+               $$->id = strdup("'true'");
+               $$->val = 1;
+          }
+          |BAR INT COMMA INT COLON FALSE {
+               $$ = (vmarg*) malloc(sizeof(vmarg));
+               $$->type = $2;
+               $$->id = strdup("'false'");
+               $$->val = 0;
+          }
+          |BAR INT {
                $$ = (vmarg*)  malloc(sizeof(vmarg));
+               $$->type = $2;
+          }
+          | BAR INT COMMA INT {
+               $$ = (vmarg*) malloc(sizeof(vmarg));
+               $$->val = $4;
                $$->type = $2;
           }
           | {;}
@@ -175,11 +187,13 @@ numConsts:     NUMARRAY COLON INT nums {;}
                ;
 
 nums:     num {;}
-          | nums num{;};
+          | nums num{;}
+          ;
 
 num:      INT BAR REAL { 
                consts_newnumber($3);
-          };
+          }
+          ;
 
 namedLibFuncs: LIBARRAY COLON INT libfuncs{;}
                | {;}
@@ -187,6 +201,7 @@ namedLibFuncs: LIBARRAY COLON INT libfuncs{;}
 
 libfuncs:      libfunc {;}
                | libfuncs libfunc {;}
+               ;
 
 libfunc:       INT BAR STRING {
                     libfuncs_newused($3);             
@@ -205,7 +220,6 @@ func:     INT BAR ID COLON INT COLON INT {
                $$->localSize = (unsigned)$5;
                $$->address = (unsigned)$7;
                userfuncs_newfunc(*$$);
-               
           }
           | INT BAR NONAME COLON INT COLON INT {
                $$ = (userfunc*)  malloc(sizeof(userfunc));

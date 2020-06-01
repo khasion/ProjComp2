@@ -19,37 +19,40 @@ newline   [\n]
 noname    [\_][f][0-9]*
 
 %%
-_magic                 {return MAGIC;}
-_code                  {return CODE;}
-_stringConsts          {return STRINGARRAY;}
-_numConsts             {return NUMARRAY;}
-_namedLibFuncs         {return LIBARRAY;}
-_userfuncs             {return USERFUNCARRAY;}
-_assign                {yylval.strval = strdup(yytext); return ASSIGN;}
-_add                   {yylval.strval = strdup(yytext); return ADD;}
-_sub                   {yylval.strval = strdup(yytext); return SUB;}
-_mul                   {yylval.strval = strdup(yytext); return MUL;}
-_div                   {yylval.strval = strdup(yytext); return DIV;}
-_mod                   {yylval.strval = strdup(yytext); return MOD;}
-_uminus                {yylval.strval = strdup(yytext); return UMINUS;}
-_and                   {yylval.strval = strdup(yytext); return AND;}
-_or                    {yylval.strval = strdup(yytext); return OR;}
-_not                   {yylval.strval = strdup(yytext); return NOT;}
-_jeq                   {yylval.strval = strdup(yytext); return JEQ;}
-_jne                   {yylval.strval = strdup(yytext); return JNE;}
-_jle                   {yylval.strval = strdup(yytext); return JLE;}
-_jge                   {yylval.strval = strdup(yytext); return JGE;}
-_jlt                   {yylval.strval = strdup(yytext); return JLT;}
-_jgt                   {yylval.strval = strdup(yytext); return JGT;}
-_callfunc              {yylval.strval = strdup(yytext); return CALLFUNC;}
-_pusharg               {yylval.strval = strdup(yytext); return PUSHARG;}
-_enterfunc             {yylval.strval = strdup(yytext); return ENTERFUNC;}
-_exitfunc              {yylval.strval = strdup(yytext); return EXITFUNC;}
-_newtable              {yylval.strval = strdup(yytext); return NEWTABLE;}
-_tablesetelem          {yylval.strval = strdup(yytext); return TABLESETELEM;}
-_tablegetelem          {yylval.strval = strdup(yytext); return TABLEGETELEM;}
-_jump                  {yylval.strval = strdup(yytext); return JUMP;}
-_nop                   {yylval.strval = strdup(yytext); return NOP;}
+_magic                 		{return MAGIC;}
+_code                  		{return CODE;}
+_stringConsts          		{return STRINGARRAY;}
+_numConsts             		{return NUMARRAY;}
+_namedLibFuncs         		{return LIBARRAY;}
+_userfuncs             		{return USERFUNCARRAY;}
+_assign                		{yylval.strval = strdup(yytext); return ASSIGN;}
+_add                   		{yylval.strval = strdup(yytext); return ADD;}
+_sub                   		{yylval.strval = strdup(yytext); return SUB;}
+_mul                   		{yylval.strval = strdup(yytext); return MUL;}
+_div                   		{yylval.strval = strdup(yytext); return DIV;}
+_mod                   		{yylval.strval = strdup(yytext); return MOD;}
+_uminus                		{yylval.strval = strdup(yytext); return UMINUS;}
+_and                   		{yylval.strval = strdup(yytext); return AND;}
+_or                    		{yylval.strval = strdup(yytext); return OR;}
+_not                   		{yylval.strval = strdup(yytext); return NOT;}
+_jeq                   		{yylval.strval = strdup(yytext); return JEQ;}
+_jne                   		{yylval.strval = strdup(yytext); return JNE;}
+_jle                   		{yylval.strval = strdup(yytext); return JLE;}
+_jge                   		{yylval.strval = strdup(yytext); return JGE;}
+_jlt                   		{yylval.strval = strdup(yytext); return JLT;}
+_jgt                   		{yylval.strval = strdup(yytext); return JGT;}
+_callfunc              		{yylval.strval = strdup(yytext); return CALLFUNC;}
+_pusharg               		{yylval.strval = strdup(yytext); return PUSHARG;}
+_enterfunc             		{yylval.strval = strdup(yytext); return ENTERFUNC;}
+_exitfunc              		{yylval.strval = strdup(yytext); return EXITFUNC;}
+_newtable              		{yylval.strval = strdup(yytext); return NEWTABLE;}
+_tablesetelem          		{yylval.strval = strdup(yytext); return TABLESETELEM;}
+_tablegetelem          		{yylval.strval = strdup(yytext); return TABLEGETELEM;}
+_jump                  		{yylval.strval = strdup(yytext); return JUMP;}
+_nop                   		{yylval.strval = strdup(yytext); return NOP;}
+'true'				   		{yylval.strval = strdup(yytext); return TRUE;}
+'false'				  		{yylval.strval = strdup(yytext); return FALSE;}
+
 
 ":"                      {return COLON;}
 ","                      {return COMMA;}

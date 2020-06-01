@@ -57,8 +57,8 @@ char* libfunc_tostring(avm_memcell* param){ return "1";}
 char* nil_tostring(avm_memcell* param) { return "0";}
 char* undef_tostring(avm_memcell* param){assert(0); return "";}
 
-unsigned char number_tobool (avm_memcell* m){ return m->data.numVal != 0;}
-unsigned char string_tobool (avm_memcell* m){ return m->data.strVal != 0;}
+unsigned char number_tobool (avm_memcell* m){return m->data.numVal != 0;}
+unsigned char string_tobool (avm_memcell* m){ return m->data.strVal != NULL;}
 unsigned char bool_tobool(avm_memcell* m){ return m->data.boolVal != 0;}
 unsigned char table_tobool(avm_memcell* m){ return 1;}
 unsigned char userfunc_tobool(avm_memcell* m){ return 1;}

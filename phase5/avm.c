@@ -41,6 +41,11 @@ execute_func_t executeFuncs[] = {
 
 void init_code(unsigned size) {
      code = (instruction*) malloc(sizeof(instruction)* size);
+     for (int i=0; i < size; i++) {
+          code[i].arg1.type = nil_a;
+          code[i].arg2.type = nil_a;
+          code[i].result.type = nil_a;
+     }
      currCode = 0;
      codeSize = size;
 }
@@ -60,13 +65,14 @@ void print_operand(vmarg arg) {
           case global_a       : sprintf(str, "%d, %d:%s ", arg.type, arg.val, arg.id); break;
           case formal_a       : sprintf(str, "%d, %d:%s ", arg.type, arg.val, arg.id); break;
           case local_a        : sprintf(str, "%d, %d:%s ", arg.type, arg.val, arg.id); break; 
-          case number_a       : sprintf(str, "%d,%d:%f ", arg.type, arg.val, numConsts[arg.val]); break;
-          case string_a       : sprintf(str, "%d,%d:%s ", arg.type, arg.val, stringConsts[arg.val]); break;
+          case number_a       : sprintf(str, "%d, %d:%f ", arg.type, arg.val, numConsts[arg.val]); break;
+          case string_a       : sprintf(str, "%d, %d:%s ", arg.type, arg.val, stringConsts[arg.val]); break;
           case bool_a         : sprintf(str, "%d, %d:%s ", arg.type, arg.val, arg.id); break;
           case nil_a          : sprintf(str, "%d ", arg.type); break;
           case userfunc_a     : sprintf(str, "%d, %d:%s ", arg.type, arg.val, userFuncs[arg.val].id); break;
           case libfunc_a      : sprintf(str, "%d, %d:%s ", arg.type, arg.val, namedLibfuncs[arg.val]); break;
           case retval_a       : sprintf(str, "%d ", arg.type) ; break;
+          default             : assert(0);
      }
      printf("|%-20s", str);
 }
@@ -83,14 +89,14 @@ void print_code () {
           "mul",              "div",              "mod",
           "uminus",           "and",              "or",
           "not",              "jeq",              "jne",
-          "jle"               "jge",              "jlt"
+          "jle",              "jge",              "jlt",
           "jqt",              "call",             "pusharg",
-          "funcenter",        "funcexit",         "newtable"
+          "funcenter",        "funcexit",         "newtable",
           "tablegetelem",     "tablesetelem",     "jump",
           "nop"     
      };
      for (int i = 0; i < codeSize; i++) {
-          printf("%-2d %-30s ", i, op_array[code[i].opcode]);
+          printf("%-2d %-30s", i, op_array[code[i].opcode]);
           print_operand(code[i].result);
           print_operand(code[i].arg1);
           print_operand(code[i].arg2);
@@ -219,9 +225,9 @@ void execute_jeq(instruction* instr){
 		avm_error("String is illegal!", "");
 	}
      else {
-    //kati tha to broume
+          printf("NATALIA\n");
      }
-
+     
      if(!executionFinished && result){
           pc = instr->result.val;
      }
