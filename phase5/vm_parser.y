@@ -11,6 +11,8 @@
      extern int yylineno;
      extern char* yytext;
      extern FILE* yyin;
+
+     unsigned globalSize = 0;
 %}
 
 %start program
@@ -104,23 +106,26 @@ opcode:   ASSIGN{$$ = 0;}
 operand:  BAR INT COMMA INT COLON ID {
                $$ = (vmarg*) malloc(sizeof(vmarg));
                $$->val = $4;
-               $$->id = $6;
+               $$->id = strdup($6);
                $$->type = $2;
+               if ( $$->val == 1) {
+                    globalSize++;
+               }
           }
           | BAR INT COMMA INT COLON TEMP {
                $$ = (vmarg*) malloc(sizeof(vmarg));
                $$->val = $4;
-               $$->id = $6;
+               $$->id = strdup($6);
                $$->type = $2;
                
           }
           | BAR INT COMMA INT COLON REAL {
-               char*name;
+               char* name;
                $$ = (vmarg*) malloc(sizeof(vmarg));
                name = (char*) malloc(sizeof(char)*50);
                $$->val = $4;
-               sprintf(name, "constnums_", $6);
-               $$->id = name;
+               sprintf(name, "constnums_%f", $6);
+               $$->id = strdup(name);
                $$->type = $2;
 
           }
@@ -132,13 +137,13 @@ operand:  BAR INT COMMA INT COLON ID {
           | BAR INT COMMA INT COLON STRING {
                $$ = (vmarg*) malloc(sizeof(vmarg));
                $$->val = $4;
-               $$->id = $6;
+               $$->id = strdup($6);
                $$->type = $2;
           }
           | BAR INT COMMA INT COLON NONAME {
                $$ = (vmarg*)  malloc(sizeof(vmarg));
                $$->val = $4;
-               $$->id = $6;
+               $$->id = strdup($6);
                $$->type = $2;
           }
           | BAR INT {
@@ -219,7 +224,6 @@ void yyerror(char* yaccProvidedMessage) {
 
 int main(int argc, char** argv){
      initMem();
-     avm_initstack();
      if(argc > 1){
           if(!(yyin = fopen(argv[1], "r"))){
                fprintf(stderr, "Cannot read  file: %s\n", argv[1]);
@@ -229,9 +233,9 @@ int main(int argc, char** argv){
           yyin = stdin;
      }
      yyparse();
-     //print_arrays();
-     //print_code();
+     avm_initstack(globalSize);
+     print_code();
      execute_cycle();
-     //print_arrays();
+     //print_stack();
      return 0;
 }

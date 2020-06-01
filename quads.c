@@ -224,7 +224,7 @@ Expr* lvalue_expr(Symbol* sym){
      e->sym->scope = sym->scope;
      e->sym->line = sym->line;
 
-     incurrscopeoffset();
+     if (!istempname(sym->name)) incurrscopeoffset();
 
      switch(sym->type){
           case localvar_s		: e->type = var_e; break;

@@ -132,7 +132,7 @@ Symbol* lvalue_id (char* yytext, unsigned yylineno) {
 	}
 	if (!flag) {
 		temp = table_insert(var_s, yytext, currscopespace(), currscopespaceoffset(), currscope(), currfuncscope(), yylineno);
-		incurrscopeoffset();
+		//incurrscopeoffset();
 	}
 	return temp;
 }
@@ -147,11 +147,11 @@ Symbol* lvalue_localid(char* yytext, unsigned yylineno) {
 	if ( !temp || temp->hide) {
 		if (currscope() >= 0) {
 			temp = table_insert(localvar_s, yytext, currscopespace(), currscopespaceoffset(), currscope(), currfuncscope(), yylineno);
-			incurrscopeoffset();
+			//incurrscopeoffset();
 		}
 		else {
 			temp = table_insert(globalvar_s, yytext, currscopespace(), currscopespaceoffset(), currscope(), currfuncscope(), yylineno);
-			incurrscopeoffset();
+			//incurrscopeoffset();
 		}
 	}
 	return temp;
@@ -207,7 +207,7 @@ Symbol* idlist_id(char* yytext, unsigned yylineno) {
 	}
 	if (!flag) {
 		temp = table_insert(var_s, yytext, currscopespace(), currscopespaceoffset(), currscope()+1, currfuncscope()+1, yylineno);
-		incurrscopeoffset();
+		//incurrscopeoffset();
 	}
 	return temp;
 }
@@ -225,7 +225,7 @@ Symbol* idlist_commaid(char* yytext, unsigned yylineno) {
 	}
 	if (!flag) {
 		temp = table_insert(var_s, yytext, currscopespace(), currscopespaceoffset(), currscope()+1, currfuncscope()+1, yylineno);
-		incurrscopeoffset();
+		//incurrscopeoffset();
 	}
 	return temp;
 }

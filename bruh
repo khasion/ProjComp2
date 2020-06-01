@@ -1,5 +1,9 @@
-x = 1+2+3+4;
-print(x);
-print("ALEKOS");
-print("TASOS");
-function f(a,b){}
+x = 5;
+y = 80;
+r = 15;
+t = 20;
+z = r+x+y;
+print(z);
+str = "ASDAS";
+print(z);
+print(str);

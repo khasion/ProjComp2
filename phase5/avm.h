@@ -63,6 +63,7 @@ typedef struct instruction {
 
 extern instruction* code;
 
+void print_stack();
 void print_code();
 void emit_code(instruction t);
 void init_code(unsigned size);

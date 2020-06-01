@@ -1,0 +1,6 @@
+1: op_add ^0 1 2 [line 1] 
+2: assign x ^0 [line 1] 
+3: assign ^1 x [line 1] 
+4: param "hello!!!!" [line 2] 
+5: call print [line 2] 
+6: getretval ^0 [line 2] 

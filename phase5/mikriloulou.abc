@@ -1,0 +1,18 @@
+_magic: 340200501 
+_code: 6
+0	|_add                           |01,1:^0                      |04,0:1.000000                |04,1:2.000000                
+1	|_assign                        |01,0:x                       |01,1:^0                      |07                           
+2	|_assign                        |01,1:^1                      |01,0:x                       |07                           
+3	|_pusharg                       |07                           |05,0:"hello!!!!"             |07                           
+4	|_callfunc                      |07                           |09,0:print                   |07                           
+5	|_assign                        |01,1:^0                      |10                           |07                           
+
+_stringConsts: 1
+0	|"hello!!!!"
+
+_numConsts: 2
+0	|1.000000
+1	|2.000000
+
+_namedLibFuncs: 1
+0	|"print"

@@ -11,11 +11,17 @@ unsigned top = 4095;
 unsigned topsp = 4095;
 avm_memcell stack[AVM_STACKSIZE];
 
-void avm_initstack (void) {
-     for (unsigned i=0; i<AVM_STACKSIZE; ++i) {
+void avm_initstack (unsigned n) {
+     for (unsigned i=0; i < AVM_STACKSIZE; ++i) {
           AVM_WIPEOUT(stack[i]);
           stack[i].type = undef_m;
      }
+     for (int i = 0; i < codeSize; i++) {
+          if ( code[i].result.type == global_a) {
+               stack[top--] = *avm_translate_operand(&code[i].result, (avm_memcell*) 0);
+          }
+     }
+     topsp = AVM_STACKSIZE - n;
 }
 
 void avm_callsaveenviroment (void) {
@@ -78,10 +84,10 @@ void avm_calllibfunc (char* id){
      }
 }
 
-void libfunc_print(void){
+void libfunc_print(void) {
      unsigned n = avm_totalactuals();
      for (unsigned i = 0; i < n; ++i) {
-          char* s=avm_tostring(avm_getactual(i));
+          char* s = avm_tostring(avm_getactual(i));
           puts(s);
           free(s);
      }
@@ -120,6 +126,7 @@ void libfunc_totalarguments(){
 }
 
 void avm_dec_top (void){
+    // printf("top\n");
      if(!top){/*stack overflow*/
           avm_error("stack overflow", "");
           executionFinished = 1;
@@ -127,7 +134,8 @@ void avm_dec_top (void){
      else --top;
 }
 
-void avm_push_envvalue (unsigned val){
+void avm_push_envvalue (unsigned val) {
+     //printf("PUSH\n");
      stack[top].type = number_m;
      stack[top].data.numVal = val;
      avm_dec_top();
@@ -135,7 +143,8 @@ void avm_push_envvalue (unsigned val){
 
 unsigned avm_get_envvalue (unsigned i ){
      assert(stack[i].type == number_m);
-     unsigned val = (unsigned) stack[i].data.numVal;
+     unsigned  val = (unsigned) stack[i].data.numVal;
+     //printf("GET %d\n", val);
      assert((stack[i].data.numVal) == ((double) val));
      return val;
 }

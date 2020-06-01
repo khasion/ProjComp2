@@ -1,4 +1,4 @@
-#include "relop.h"
+ #include "relop.h"
 
 cmp_func_t cmpFuncs[] = {
 	avm_eq,
@@ -20,7 +20,7 @@ tostring_func_t tostringFuncs[]={
 	undef_tostring
 };
 
-tobool_func_t toboolFuncs[]={
+tobool_func_t toboolFuncs[]= {
 	number_tobool,
 	string_tobool,
 	bool_tobool,
@@ -40,7 +40,7 @@ char* number_tostring(avm_memcell* param){
 }
 char* strng_tostring(avm_memcell* param) {
 	char* str;
-	str = (char*) malloc(sizeof(char));
+	str = (char*) malloc(sizeof(param->data.strVal));
 	sprintf(str,"%s",param->data.strVal);
 	return str;
 

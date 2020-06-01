@@ -54,42 +54,61 @@ void emit_code (instruction t) {
 }
 
 void print_operand(vmarg arg) {
+     char* str = (char*) malloc(sizeof(char)*50);
      switch (arg.type) {
-          case label_a        : printf("%d, %d ", arg.type, arg.val); break;
-          case global_a       : printf("%d, %d:%s ", arg.type, arg.val, arg.id); break;
-          case formal_a       : printf("%d, %d:%s ", arg.type, arg.val, arg.id); break;
-          case local_a        : printf("%d, %d:%s ", arg.type, arg.val, arg.id); break; 
-          case number_a       : printf("%d,%d:%f ", arg.type, arg.val, numConsts[arg.val]); break;
-          case string_a       : printf("%d,%d:%s ", arg.type, arg.val, stringConsts[arg.val]); break;
-          case bool_a         : printf("%d, %d:%s ", arg.type, arg.val, arg.id); break;
-          case nil_a          : printf("%d ", arg.type); break;
-          case userfunc_a     : printf("%d, %d:%s ", arg.type, arg.val, userFuncs[arg.val].id); break;
-          case libfunc_a      : printf("%d, %d:%s ", arg.type, arg.val, namedLibfuncs[arg.val]); break;
-          case retval_a       : printf("%d ", arg.type) ; break;
+          case label_a        : sprintf(str, "%d, %d ", arg.type, arg.val); break;
+          case global_a       : sprintf(str, "%d, %d:%s ", arg.type, arg.val, arg.id); break;
+          case formal_a       : sprintf(str, "%d, %d:%s ", arg.type, arg.val, arg.id); break;
+          case local_a        : sprintf(str, "%d, %d:%s ", arg.type, arg.val, arg.id); break; 
+          case number_a       : sprintf(str, "%d,%d:%f ", arg.type, arg.val, numConsts[arg.val]); break;
+          case string_a       : sprintf(str, "%d,%d:%s ", arg.type, arg.val, stringConsts[arg.val]); break;
+          case bool_a         : sprintf(str, "%d, %d:%s ", arg.type, arg.val, arg.id); break;
+          case nil_a          : sprintf(str, "%d ", arg.type); break;
+          case userfunc_a     : sprintf(str, "%d, %d:%s ", arg.type, arg.val, userFuncs[arg.val].id); break;
+          case libfunc_a      : sprintf(str, "%d, %d:%s ", arg.type, arg.val, namedLibfuncs[arg.val]); break;
+          case retval_a       : sprintf(str, "%d ", arg.type) ; break;
+     }
+     printf("|%-20s", str);
+}
+
+void print_stack() {
+     for (int i = AVM_STACKSIZE-1; stack[i].type != undef_m; i--) {
+          printf("%d: %f\n", i, stack[i].data.numVal);
      }
 }
 
 void print_code () {
+     char* op_array[] = {
+          "assign",           "add",              "sub",
+          "mul",              "div",              "mod",
+          "uminus",           "and",              "or",
+          "not",              "jeq",              "jne",
+          "jle"               "jge",              "jlt"
+          "jqt",              "call",             "pusharg",
+          "funcenter",        "funcexit",         "newtable"
+          "tablegetelem",     "tablesetelem",     "jump",
+          "nop"     
+     };
      for (int i = 0; i < codeSize; i++) {
-          printf("%d ", code[i].opcode);
+          printf("%-2d %-30s ", i, op_array[code[i].opcode]);
           print_operand(code[i].result);
           print_operand(code[i].arg1);
           print_operand(code[i].arg2);
           printf("\n");
      }
+     printf("-----------------------------------------\n");
 }
 
 avm_memcell* avm_translate_operand(vmarg* arg, avm_memcell* reg){
-     if (!reg) reg = (avm_memcell*) malloc(sizeof(avm_memcell));
      switch(arg->type){
           /*Variables*/
-          case global_a: return &stack[AVM_STACKSIZE-1-arg->val];
+          case global_a: return &stack[AVM_STACKSIZE-1-arg->val]; 
           case local_a:  return &stack[topsp-arg->val];
           case formal_a: return &stack[topsp+AVM_STACKENV_SIZE+1+arg->val];
           case retval_a: return &retval;
           case number_a: {
                reg->type = number_m;
-               reg->data.numVal = const_getnumber(arg->val);
+               reg->data.numVal = numConsts[arg->val];
                return reg;
           }
           case string_a: {
@@ -135,24 +154,27 @@ void execute_cycle(void) {
           if (pc == oldPC) {
                ++pc;
           }
+          execute_cycle();
      }
-     execute_cycle();
 }
-
-double consts_getnumber (unsigned int index);
 
 void avm_warning(char* war){
      printf("Warning: %s", war);
 }
 
 void avm_error(char* err, void *content) {
+     executionFinished = 1;
      printf(err, content);
 }
 
 void avm_assign (avm_memcell* lv, avm_memcell* rv){
-     if (lv==rv) return;
-     if (lv->type == table_m && rv->type == table_m && lv->data.tableVal == rv->data.tableVal) return;
-     if (rv->type == undef_m) avm_warning("assigning from 'undef' content!");
+     if (lv == rv) return;
+     if (lv->type == table_m && rv->type == table_m && lv->data.tableVal == rv->data.tableVal) {
+          return;
+     }
+     if (rv->type == undef_m) {
+          avm_warning("assigning from 'undef' content!");
+     }
      avm_memcellclear(lv);
      memcpy(lv , rv , sizeof(avm_memcell));
      if (lv->type == string_m) lv->data.strVal= strdup(rv->data.strVal);
@@ -162,11 +184,12 @@ void avm_assign (avm_memcell* lv, avm_memcell* rv){
 void execute_assign (instruction* instr) {
      avm_memcell* lv = avm_translate_operand(&instr->result , (avm_memcell*)0);
      avm_memcell* rv = avm_translate_operand(&instr->arg1 , &ax);
+     //printf("ARG1 %s %f  RESULT %s %f \n",instr->result.id, lv->data.numVal ,instr->arg1.id ,rv->data.numVal);
      assert(lv);
      //assert(&stack[AVM_STACKSIZE-1] <= lv);
-     //assert(lv > &stack[top] || lv==&retval);
-     //assert(lv && ( &stack[AVM_STACKSIZE-1] <= lv && lv > &stack[top] || lv==&retval));
-     //assert(rv); //should do similar assertion tests here
+     //assert(lv > &stack[top] || lv == &retval);
+     //assert(lv && ( &stack[AVM_STACKSIZE-1] <= lv && lv > &stack[top] || lv == &retval));
+     //assert(rv && ( &stack[AVM_STACKSIZE-1] <= rv && lv > &stack[top] || rv == &retval));
 
      avm_assign(lv,rv);
 }
@@ -223,7 +246,7 @@ void execute_nop(instruction* t){
      
 }
 
-// void avm_initialize(){
+// void avm_initialize() {
 //   avm_initstack();
 //   avm_registerlibfunc("print", libfunc_print);
 //   avm_registerlibfunc("input", libfunc_input);
