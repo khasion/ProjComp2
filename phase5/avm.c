@@ -59,7 +59,7 @@ void print_operand(vmarg arg) {
           case label_a        : sprintf(str, "%d, %d ", arg.type, arg.val); break;
           case global_a       : sprintf(str, "%d, %d:%s ", arg.type, arg.val, arg.id); break;
           case formal_a       : sprintf(str, "%d, %d:%s ", arg.type, arg.val, arg.id); break;
-          case local_a        : sprintf(str, "%d, %d:%s ", arg.type, arg.val, arg.id); break; 
+          case local_a        : sprintf(str, "%d, %d:%s ", arg.type, arg.val, arg.id); break;
           case number_a       : sprintf(str, "%d,%d:%f ", arg.type, arg.val, numConsts[arg.val]); break;
           case string_a       : sprintf(str, "%d,%d:%s ", arg.type, arg.val, stringConsts[arg.val]); break;
           case bool_a         : sprintf(str, "%d, %d:%s ", arg.type, arg.val, arg.id); break;
@@ -72,7 +72,8 @@ void print_operand(vmarg arg) {
 }
 
 void print_stack() {
-     for (int i = AVM_STACKSIZE-1; stack[i].type != undef_m; i--) {
+  int i;
+     for (i = AVM_STACKSIZE-1; stack[i].type != undef_m; i--) {
           printf("%d: %f\n", i, stack[i].data.numVal);
      }
 }
@@ -87,9 +88,10 @@ void print_code () {
           "jqt",              "call",             "pusharg",
           "funcenter",        "funcexit",         "newtable"
           "tablegetelem",     "tablesetelem",     "jump",
-          "nop"     
+          "nop"
      };
-     for (int i = 0; i < codeSize; i++) {
+     int i;
+     for (i = 0; i < codeSize; i++) {
           printf("%-2d %-30s ", i, op_array[code[i].opcode]);
           print_operand(code[i].result);
           print_operand(code[i].arg1);
@@ -102,7 +104,7 @@ void print_code () {
 avm_memcell* avm_translate_operand(vmarg* arg, avm_memcell* reg){
      switch(arg->type){
           /*Variables*/
-          case global_a: return &stack[AVM_STACKSIZE-1-arg->val]; 
+          case global_a: return &stack[AVM_STACKSIZE-1-arg->val];
           case local_a:  return &stack[topsp-arg->val];
           case formal_a: return &stack[topsp+AVM_STACKENV_SIZE+1+arg->val];
           case retval_a: return &retval;
@@ -214,13 +216,13 @@ void execute_jeq(instruction* instr){
 	}
      else if(rv1->type == bool_m || rv2->type == bool_m) {
 		result=rv1->data.boolVal == rv2->data.boolVal;
-	} 
+	}
      else if(rv1->type !=rv2->type) {
 		avm_error("String is illegal!", "");
 	}
-     else {
-    //kati tha to broume
-     }
+  else {
+
+  }
 
      if(!executionFinished && result){
           pc = instr->result.val;
@@ -236,15 +238,18 @@ void execute_jge(instruction* t) {
 
 }
 void execute_jlt(instruction* t) {
-
+  execute_relop(t);
 }
 void execute_jgt(instruction* t) {
+  printf("HELL\n" );
+    execute_relop(t);
 
 }
 
 void execute_nop(instruction* t){
-     
+
 }
+
 
 // void avm_initialize() {
 //   avm_initstack();
@@ -261,4 +266,3 @@ void execute_nop(instruction* t){
 //   avm_registerlibfunc("cos", libfunc_cos);
 //   avm_registerlibfunc("sin", libfunc_sin);
 // }
-

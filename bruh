@@ -1,9 +1,6 @@
-x = 5;
-y = 80;
-r = 15;
-t = 20;
-z = r+x+y;
+x = 5; 
+y = 6;
+t = 7;
+z= x > y;
 print(z);
-str = "ASDAS";
-print(z);
-print(str);
+print("HELLO!!!");

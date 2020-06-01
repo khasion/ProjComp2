@@ -1,9 +1,8 @@
-/* A Bison parser, made by GNU Bison 3.6.2.  */
+/* A Bison parser, made by GNU Bison 3.0.2.  */
 
 /* Bison interface for Yacc-like parsers in C
 
-   Copyright (C) 1984, 1989-1990, 2000-2015, 2018-2020 Free Software Foundation,
-   Inc.
+   Copyright (C) 1984, 1989-1990, 2000-2013 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -31,10 +30,6 @@
    This special exception was added by the Free Software Foundation in
    version 2.2 of Bison.  */
 
-/* DO NOT RELY ON FEATURES THAT ARE NOT DOCUMENTED in the manual,
-   especially those whose name start with YY_ or yy_.  They are
-   private implementation details that can be changed or removed.  */
-
 #ifndef YY_YY_Y_TAB_H_INCLUDED
 # define YY_YY_Y_TAB_H_INCLUDED
 /* Debug traces.  */
@@ -45,68 +40,60 @@
 extern int yydebug;
 #endif
 
-/* Token kinds.  */
+/* Token type.  */
 #ifndef YYTOKENTYPE
 # define YYTOKENTYPE
   enum yytokentype
   {
-    YYEMPTY = -2,
-    YYEOF = 0,                     /* "end of file"  */
-    YYerror = 256,                 /* error  */
-    YYUNDEF = 257,                 /* "invalid token"  */
-    ASSIGN = 258,                  /* ASSIGN  */
-    OR = 259,                      /* OR  */
-    AND = 260,                     /* AND  */
-    EQ = 261,                      /* EQ  */
-    NOT_EQ = 262,                  /* NOT_EQ  */
-    GREATER = 263,                 /* GREATER  */
-    GREATER_EQ = 264,              /* GREATER_EQ  */
-    LESS = 265,                    /* LESS  */
-    LESS_EQ = 266,                 /* LESS_EQ  */
-    PLUS = 267,                    /* PLUS  */
-    MINUS = 268,                   /* MINUS  */
-    MUL = 269,                     /* MUL  */
-    DIV = 270,                     /* DIV  */
-    MOD = 271,                     /* MOD  */
-    NOT = 272,                     /* NOT  */
-    D_PLUS = 273,                  /* D_PLUS  */
-    D_MINUS = 274,                 /* D_MINUS  */
-    UMINUS = 275,                  /* UMINUS  */
-    DOT = 276,                     /* DOT  */
-    D_DOT = 277,                   /* D_DOT  */
-    L_BRA = 278,                   /* L_BRA  */
-    R_BRA = 279,                   /* R_BRA  */
-    L_PAR = 280,                   /* L_PAR  */
-    R_PAR = 281,                   /* R_PAR  */
-    INT = 282,                     /* INT  */
-    REAL = 283,                    /* REAL  */
-    ID = 284,                      /* ID  */
-    STRING = 285,                  /* STRING  */
-    IF = 286,                      /* IF  */
-    ELSE = 287,                    /* ELSE  */
-    WHILE = 288,                   /* WHILE  */
-    FOR = 289,                     /* FOR  */
-    FUNC = 290,                    /* FUNC  */
-    RETURN = 291,                  /* RETURN  */
-    BREAK = 292,                   /* BREAK  */
-    CONTINUE = 293,                /* CONTINUE  */
-    LOCAL = 294,                   /* LOCAL  */
-    TRUE = 295,                    /* TRUE  */
-    FALSE = 296,                   /* FALSE  */
-    NIL = 297,                     /* NIL  */
-    LC_BRA = 298,                  /* LC_BRA  */
-    RC_BRA = 299,                  /* RC_BRA  */
-    SEMI = 300,                    /* SEMI  */
-    COMMA = 301,                   /* COMMA  */
-    COLON = 302,                   /* COLON  */
-    D_COLON = 303                  /* D_COLON  */
+    ASSIGN = 258,
+    OR = 259,
+    AND = 260,
+    EQ = 261,
+    NOT_EQ = 262,
+    GREATER = 263,
+    GREATER_EQ = 264,
+    LESS = 265,
+    LESS_EQ = 266,
+    PLUS = 267,
+    MINUS = 268,
+    MUL = 269,
+    DIV = 270,
+    MOD = 271,
+    NOT = 272,
+    D_PLUS = 273,
+    D_MINUS = 274,
+    UMINUS = 275,
+    DOT = 276,
+    D_DOT = 277,
+    L_BRA = 278,
+    R_BRA = 279,
+    L_PAR = 280,
+    R_PAR = 281,
+    INT = 282,
+    REAL = 283,
+    ID = 284,
+    STRING = 285,
+    IF = 286,
+    ELSE = 287,
+    WHILE = 288,
+    FOR = 289,
+    FUNC = 290,
+    RETURN = 291,
+    BREAK = 292,
+    CONTINUE = 293,
+    LOCAL = 294,
+    TRUE = 295,
+    FALSE = 296,
+    NIL = 297,
+    LC_BRA = 298,
+    RC_BRA = 299,
+    SEMI = 300,
+    COMMA = 301,
+    COLON = 302,
+    D_COLON = 303
   };
-  typedef enum yytokentype yytoken_kind_t;
 #endif
-/* Token kinds.  */
-#define YYEOF 0
-#define YYerror 256
-#define YYUNDEF 257
+/* Tokens.  */
 #define ASSIGN 258
 #define OR 259
 #define AND 260
@@ -156,9 +143,10 @@ extern int yydebug;
 
 /* Value type.  */
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
+typedef union YYSTYPE YYSTYPE;
 union YYSTYPE
 {
-#line 22 "parser.y"
+#line 22 "parser.y" /* yacc.c:1909  */
 
      int intval;
      char* strval;
@@ -169,10 +157,8 @@ union YYSTYPE
      struct symbol* symval;
      struct prefix prefval;
 
-#line 173 "y.tab.h"
-
+#line 161 "y.tab.h" /* yacc.c:1909  */
 };
-typedef union YYSTYPE YYSTYPE;
 # define YYSTYPE_IS_TRIVIAL 1
 # define YYSTYPE_IS_DECLARED 1
 #endif

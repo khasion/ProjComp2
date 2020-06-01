@@ -26,8 +26,8 @@ void initMem (void) {
      stringConsts = (char**) malloc(sizeof(char)*1024);
      namedLibfuncs = (char**) malloc(sizeof(char)*1024);
      userFuncs = (userfunc*) malloc(sizeof(userfunc)*1024);
-
-     for (int i = 0; i < 1024; i++) {
+     int i;
+     for (i = 0; i < 1024; i++) {
           stringConsts[i] = NULL;
           namedLibfuncs[i] = NULL;
      }
@@ -75,7 +75,8 @@ void avm_tabledecrefcounter (avm_table* t) {
 
 void avm_tablebucketsinit (avm_table_bucket** p) {
      p = (avm_table_bucket**) malloc(sizeof(avm_table_bucket)*AVM_TABLE_HASHSIZE);
-     for (unsigned i=0; i < AVM_TABLE_HASHSIZE; ++i) {
+     unsigned i;
+     for (i=0; i < AVM_TABLE_HASHSIZE; ++i) {
           p[i] = (avm_table_bucket*) malloc(sizeof(avm_table_bucket));
           p[i] = NULL;
      }
@@ -116,8 +117,10 @@ void memclear_table (avm_memcell* m){
 }
 
 void avm_tablebucketsdestroy (avm_table_bucket** p) {
-     for (unsigned i=0; i<AVM_TABLE_HASHSIZE; ++i, ++p) {
-          for (avm_table_bucket* b = *p; b;) {
+  unsigned i;
+     for (i=0; i<AVM_TABLE_HASHSIZE; ++i, ++p) {
+       avm_table_bucket* b;
+          for (b = *p; b;) {
                avm_table_bucket* del = b;
                b = b->next;
                avm_memcellclear(&del->key);
@@ -172,19 +175,20 @@ unsigned libfuncs_newused (char* s) {
 }
 
 void print_arrays() {
-     for (int i = 0; i < totalStringConsts; i++) {
+  int i ;
+     for (i = 0; i < totalStringConsts; i++) {
           printf("%d |%s\n", i, stringConsts[i]);
      }
 
-     for (int i = 0; i < totalNumConsts ; i++){
+     for (i = 0; i < totalNumConsts ; i++){
           printf("%d |%f\n", i, numConsts[i]);
      }
 
-    for (int i = 0; i < totalNamedLibFuncs; i++) {
+    for (i = 0; i < totalNamedLibFuncs; i++) {
          printf("%d |%s\n", i, namedLibfuncs[i]);
-    } 
+    }
 
-    for(int i = 0; i < totaluserFuncs; i++){
+    for(i = 0; i < totaluserFuncs; i++){
          printf("%d |%s\n",i, userFuncs[i].id);
     }
 }

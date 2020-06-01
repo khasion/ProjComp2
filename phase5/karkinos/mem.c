@@ -16,8 +16,7 @@ userfunc* userFuncs;
 unsigned  totaluserFuncs;
 
 static void avm_initstack (void) {
-  unsigned i;
-     for (i=0; i<AVM_STACKSIZE; ++i) {
+     for (unsigned i=0; i<AVM_STACKSIZE; ++i) {
           AVM_WIPEOUT(stack[i]);
           stack[i].type = undef_m;
      }
@@ -29,11 +28,68 @@ void initMem (void) {
      stringConsts = (char**) malloc(sizeof(char)*1024);
      namedLibfuncs = (char**) malloc(sizeof(char)*1024);
      userFuncs = (userfunc*) malloc(sizeof(userfunc)*1024);
-int i;
-     for (i = 0; i < 1024; i++) {
+
+     for (int i = 0; i < 1024; i++) {
           stringConsts[i] = NULL;
           namedLibfuncs[i] = NULL;
      }
+}
+
+void avm_tableincrefcounter (avm_table* t) {
+     ++t->refCounter;
+}
+
+void avm_tabledecrefcounter (avm_table* t) {
+     assert(t->refCounter > 0);
+     if (!--t->refCounter) {
+          avm_tabledestroy(t);
+     }
+}
+
+void avm_tablebucketsinit (avm_table_bucket** p) {
+     for (unsigned i=0; i < AVM_TABLE_HASHSIZE; ++i) {
+          p[i] = (avm_table_bucket*) 0;
+     }
+}
+
+avm_table* avm_tablenew (void) {
+     avm_table* t = (avm_table* ) malloc(sizeof(avm_table));
+     AVM_WIPEOUT(*t);
+
+     t->refCounter = t->total = 0;
+     avm_tablebucketsinit(t->numIndexed);
+     avm_tablebucketsinit(t->strIndexed);
+     avm_tablebucketsinit(t->boolIndexed);
+     avm_tablebucketsinit(t->userFuncIndexed);
+     avm_tablebucketsinit(t->libFuncIndexed);
+
+     return t;
+}
+
+void avm_memcellclear (avm_memcell* m) {
+ 
+}
+
+void avm_tablebucketsdestroy (avm_table_bucket** p) {
+     for (unsigned i=0; i<AVM_TABLE_HASHSIZE; ++i, ++p) {
+          for (avm_table_bucket* b = *p; b;) {
+               avm_table_bucket* del = b;
+               b = b->next;
+               avm_memcellclear(&del->key);
+               avm_memcellclear(&del->value);
+               free(del);
+          }
+          p[i] = (avm_table_bucket*) 0;
+     }
+}
+
+void avm_tabledestroy (avm_table* t) {
+     avm_tablebucketsdestroy(t->strIndexed);
+     avm_tablebucketsdestroy(t->numIndexed);
+     avm_tablebucketsdestroy(t->boolIndexed);
+     avm_tablebucketsdestroy(t->userFuncIndexed);
+     avm_tablebucketsdestroy(t->libFuncIndexed);
+     free(t);
 }
 
 unsigned consts_newstring (char* s) {

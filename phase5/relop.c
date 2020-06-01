@@ -79,7 +79,7 @@ char* avm_tostring(avm_memcell* m){
 unsigned char execute_relop(instruction* instr){
 	avm_memcell* lv = avm_translate_operand(&instr->result, (avm_memcell*)0);
 	avm_memcell* rv1 = avm_translate_operand(&instr->arg1, &ax);
-	avm_memcell* rv2 = avm_translate_operand(&instr->arg2, &bx);	
+	avm_memcell* rv2 = avm_translate_operand(&instr->arg2, &bx);
 
 	assert(rv1 && rv2);
 	if (rv1->type == undef_m ||  rv1->type == libfunc_m  ){
@@ -91,8 +91,12 @@ unsigned char execute_relop(instruction* instr){
 		avm_error("Wrong type on Argument2!\n" , "");
 		executionFinished = 1;
 		return 0;
-	}
-	return cmpFuncs[instr->opcode - jeq_v] (rv1, rv2);	
+	}else{
+    arithmetic_func_t op = cmpFuncs[instr->opcode - jeq_v];
+    avm_memcellclear(lv);
+    lv->type = bool_m;
+    lv->data.boolVal = (*op)(rv1->data.boolVal, rv2->data.boolVal);
+  }
 }
 
 unsigned char avm_eq(avm_memcell* arg1, avm_memcell* arg2) 	{ return arg1->data.numVal == arg2->data.numVal;}

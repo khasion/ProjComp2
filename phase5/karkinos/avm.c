@@ -1,24 +1,24 @@
 #include "avm.h"
 
-unsigned            currProcessedQuad;
-instruction* instructions = (instruction*) 0;
-unsigned currIns = 0;
-unsigned totalIns = 0;
+unsigned            currProcessedQuad;     
+instruction* instructions = (instruction*) 0;    
+unsigned currIns = 0;            
+unsigned totalIns = 0;          
 
-generator_func_t (generators[]) = {
-	generate_ASSIGN ,
-	generate_ADD ,
+generator_func_t (generators[]) = {           
+	generate_ASSIGN ,      
+	generate_ADD ,          
      generate_SUB ,
-     generate_MUL ,
-     generate_DIV ,
-     generate_MOD ,
-	generate_UMINUS ,
-	generate_AND,
-	generate_OR ,
-	generate_NOT ,
-	generate_IF_EQ ,
-	generate_IF_NOTEQ ,
-	generate_IF_LESSEQ ,
+     generate_MUL ,         
+     generate_DIV ,        
+     generate_MOD ,         
+	generate_UMINUS ,          
+	generate_AND,          
+	generate_OR ,          
+	generate_NOT ,          
+	generate_IF_EQ ,          
+	generate_IF_NOTEQ ,	       
+	generate_IF_LESSEQ ,        
 	generate_IF_GREATEREQ ,
 	generate_IF_LESS ,
 	generate_IF_GREATER ,
@@ -36,9 +36,8 @@ generator_func_t (generators[]) = {
 
 void ins_init() {
      instructions = (instruction*) malloc(sizeof(instruction)*EXPAND_SIZE);
-		 int i;
-     for (i = 0; i < EXPAND_SIZE; i++) {
-          instructions[i].opcode = nop_v;
+     for (int i = 0; i < EXPAND_SIZE; i++) {
+          instructions[i].opcode = nop_v; 
           reset_operand(&instructions[i].result);
           reset_operand(&instructions[i].arg2);
           reset_operand(&instructions[i].arg1);
@@ -70,8 +69,7 @@ void instructions_backpatch (retList* list, unsigned label) {
 }
 
 void patch_all () {
-	int i;
-     for (i = 1; i < nextquad(); i++) {
+     for (int i = 1; i < nextquad(); i++) {
           if (instructions[quads[i].taddress].result.type == label_a) {
                instructions[quads[i].taddress].result.val = quads[quads[i].label].taddress;
           }
@@ -80,7 +78,7 @@ void patch_all () {
 
 void make_operand(Expr* e, vmarg* arg){
      switch(e->type) {
-
+          
           /* All those below use a variable for storage.
           */
           case var_e:
@@ -93,7 +91,7 @@ void make_operand(Expr* e, vmarg* arg){
                assert(e->sym);
                arg->val = e->sym->offset;
                arg->id = strdup(e->sym->name);
-               switch (e->sym->space) {
+               switch (e->sym->space) { 
                     case programvar     : arg->type = global_a; break;
                     case functionlocal  : arg->type = local_a; break;
                     case formalarg      : arg->type = formal_a; break;
@@ -176,7 +174,7 @@ void generate (vmopcode op, Quad* quad) {
      reset_operand(&t.arg2);
      reset_operand(&t.result);
      if ( quad->arg1) {
-          make_operand(quad->arg1, &t.arg1);
+          make_operand(quad->arg1, &t.arg1);  
      }
      if ( quad->arg2 ) {
           make_operand(quad->arg2, &t.arg2);
@@ -186,19 +184,16 @@ void generate (vmopcode op, Quad* quad) {
      }
      quad->taddress = nextinstructionlabel();
      instructions_emit(t);
-}
+}  
 
-void generate_ADD (Quad* quad)  { generate(add_v, quad); }
-void generate_SUB (Quad* quad)  { generate(sub_v, quad); }
-void generate_MUL (Quad* quad)  { generate(mul_v, quad); }
-void generate_DIV (Quad* quad)  { generate(div_v, quad); }
+void generate_ADD (Quad* quad)  { generate(add_v, quad); } 
+void generate_SUB (Quad* quad)  { generate(sub_v, quad); } 
+void generate_MUL (Quad* quad)  { generate(mul_v, quad); } 
+void generate_DIV (Quad* quad)  { generate(div_v, quad); } 
 void generate_MOD (Quad* quad)  { generate(mod_v, quad); }
 
 void generate_UMINUS (Quad* quad) {
      instruction t;
-     reset_operand(&t.arg1);
-     reset_operand(&t.arg2);
-     reset_operand(&t.result);
      t.opcode = mul_v;
      make_operand(quad->arg1, &t.arg1);
      make_numberoperand(&t.arg2, -1);
@@ -206,11 +201,11 @@ void generate_UMINUS (Quad* quad) {
      instructions_emit(t);
 }
 
-void generate_NEWTABLE (Quad* quad)      { generate(newtable_v, quad); }
-void generate_TABLEGETELEM (Quad* quad)  { generate(tablegetelem_v, quad); }
-void generate_TABLESETELEM (Quad* quad)  { generate(tablesetelem_v, quad); }
-void generate_ASSIGN (Quad* quad)        { generate(assign_v, quad);}
-void generate_NOP ()                     { instruction t; t.opcode=nop_v; instructions_emit(t); }
+void generate_NEWTABLE (Quad* quad)      { generate(newtable_v, quad); } 
+void generate_TABLEGETELEM (Quad* quad)  { generate(tablegetelem_v, quad); } 
+void generate_TABLESETELEM (Quad* quad)  { generate(tablesetelem_v, quad); } 
+void generate_ASSIGN (Quad* quad)        { generate(assign_v, quad);} 
+void generate_NOP ()                     { instruction t; t.opcode=nop_v; instructions_emit(t); } 
 
 unsigned currprocessedquad() {
      return currProcessedQuad;
@@ -223,159 +218,150 @@ void generate_relational (vmopcode  op, Quad* quad) {
      reset_operand(&t.result);
      t.opcode = op;
      if(quad->arg1) {
-          make_operand(quad->arg1, &t.arg1);
+          make_operand(quad->arg1, &t.arg1);  
      }
      if(quad->arg2) {
           make_operand(quad->arg2, &t.arg2);
      }
-
+     
      t.result.type = label_a;
      quad->taddress = nextinstructionlabel();
      instructions_emit(t);
 }
 
-void generate_JUMP (Quad* quad)         { generate_relational(jump_v, quad); }
-void generate_IF_EQ (Quad* quad)        { generate_relational(jeq_v, quad); }
-void generate_IF_NOTEQ(Quad* quad)      { generate_relational(jne_v, quad); }
-void generate_IF_GREATER (Quad* quad)   { generate_relational(jqt_v, quad); }
+void generate_JUMP (Quad* quad)         { generate_relational(jump_v, quad); } 
+void generate_IF_EQ (Quad* quad)        { generate_relational(jeq_v, quad); } 
+void generate_IF_NOTEQ(Quad* quad)      { generate_relational(jne_v, quad); } 
+void generate_IF_GREATER (Quad* quad)   { generate_relational(jqt_v, quad); } 
 void generate_IF_GREATEREQ(Quad* quad)  { generate_relational(jge_v, quad); }
-void generate_IF_LESS (Quad* quad)      { generate_relational(jlt_v, quad); }
+void generate_IF_LESS (Quad* quad)      { generate_relational(jlt_v, quad); } 
 void generate_IF_LESSEQ (Quad* quad)    { generate_relational(jle_v, quad); }
 
-void generate_NOT (Quad* quad) {
+void generate_NOT (Quad* quad) {    
 
-     quad->taddress = nextinstructionlabel();
+     quad->taddress = nextinstructionlabel();  
      instruction t;
 
-     t.opcode = jeq_v;
-     make_operand(quad->arg1, &t.arg1);
-     make_booloperand(&t.arg2, false);
-     t.result.type = label_a;
-     t.result.val  = nextinstructionlabel() + 3;
+     t.opcode = jeq_v;  
+     make_operand(quad->arg1, &t.arg1);  
+     make_booloperand(&t.arg2, false);  
+     t.result.type = label_a;  
+     t.result.val  = nextinstructionlabel() + 3;  
      instructions_emit(t);
 
-     t.opcode = assign_v;
-     make_booloperand(&t.arg1, false);
-     reset_operand(&t.arg2);
-     make_operand(quad->result, &t.result);
+     t.opcode = assign_v;  
+     make_booloperand(&t.arg1, false);  
+     reset_operand(&t.arg2);  
+     make_operand(quad->result, &t.result);  
      instructions_emit(t);
 
-     t.opcode = jump_v;
-     reset_operand (&t.arg1);
+     t.opcode = jump_v;  
+     reset_operand (&t.arg1);  
      reset_operand(&t.arg2);
-     t.result.type = label_a;
-     t.result.val  = nextinstructionlabel() +2;
-     instructions_emit(t);
+     t.result.type = label_a;  
+     t.result.val  = nextinstructionlabel() +2;  
+     instructions_emit(t);    
 
-     t.opcode = assign_v;
-     make_booloperand(&t.arg1, true);
-     reset_operand(&t.arg2);
-     make_operand(quad->result, &t.result);
-     instructions_emit(t);
-}
+     t.opcode = assign_v;  
+     make_booloperand(&t.arg1, true);  
+     reset_operand(&t.arg2);  
+     make_operand(quad->result, &t.result);  
+     instructions_emit(t); 
+} 
 
 void generate_OR (Quad* quad) {
 
-     quad->taddress = nextinstructionlabel();
-     instruction t;
+     quad->taddress = nextinstructionlabel();  
+     instruction t;    
 
      t.opcode = jeq_v;
-     make_operand(quad->arg1, &t.arg1);
-     make_booloperand(&t.arg2, true);
+     make_operand(quad->arg1, &t.arg1);  
+     make_booloperand(&t.arg2, true);  
+     t.result.type = label_a;  
+     t.result.val  = nextinstructionlabel() + 4;  
+     instructions_emit(t);
+
+     make_operand(quad->arg2, &t.arg1);  
+     t.result.val  = nextinstructionlabel() + 3;  
+     instructions_emit(t);
+
+     t.opcode = assign_v;  
+     make_booloperand(&t.arg1, false);  
+     reset_operand(&t.arg2);
+     make_operand(quad->result, &t.result);  
+     instructions_emit(t);    
+
+     t.opcode = jump_v;  
+     reset_operand (&t.arg1);  
+     reset_operand(&t.arg2);  
      t.result.type = label_a;
-     t.result.val  = nextinstructionlabel() + 4;
-     instructions_emit(t);
+     t.result.val  = nextinstructionlabel() + 2;  
+     instructions_emit(t);    
 
-     make_operand(quad->arg2, &t.arg1);
-     t.result.val  = nextinstructionlabel() + 3;
-     instructions_emit(t);
-
-     t.opcode = assign_v;
-     make_booloperand(&t.arg1, false);
-     reset_operand(&t.arg2);
-     make_operand(quad->result, &t.result);
-     instructions_emit(t);
-
-     t.opcode = jump_v;
-     reset_operand (&t.arg1);
-     reset_operand(&t.arg2);
-     t.result.type = label_a;
-     t.result.val  = nextinstructionlabel() + 2;
-     instructions_emit(t);
-
-     t.opcode = assign_v;
-     make_booloperand(&t.arg1, true);
-     reset_operand(&t.arg2);
-     make_operand(quad->result, &t.result);
-     instructions_emit(t);
+     t.opcode = assign_v;  
+     make_booloperand(&t.arg1, true);  
+     reset_operand(&t.arg2);  
+     make_operand(quad->result, &t.result);  
+     instructions_emit(t); 
 }
 
 void generate_AND (Quad* quad) {
 
-     quad->taddress = nextinstructionlabel();
-     instruction t;
+     quad->taddress = nextinstructionlabel();  
+     instruction t;    
 
      t.opcode = jeq_v;
-     make_operand(quad->arg1, &t.arg1);
-     make_booloperand(&t.arg2, true);
-     t.result.type = label_a;
-     t.result.val  = nextinstructionlabel() + 1;
+     make_operand(quad->arg1, &t.arg1);  
+     make_booloperand(&t.arg2, true);  
+     t.result.type = label_a;  
+     t.result.val  = nextinstructionlabel() + 1;  
      instructions_emit(t);
 
      make_operand(quad->arg2, &t.arg1);
-     t.result.val  = nextinstructionlabel() + 1;
+     t.result.val  = nextinstructionlabel() + 1;  
      instructions_emit(t);
 
-     t.opcode = assign_v;
-     make_booloperand(&t.arg1, false);
+     t.opcode = assign_v;  
+     make_booloperand(&t.arg1, false);  
      reset_operand(&t.arg2);
-     make_operand(quad->result, &t.result);
-     instructions_emit(t);
+     make_operand(quad->result, &t.result);  
+     instructions_emit(t);    
 
-     t.opcode = jump_v;
-     reset_operand (&t.arg1);
-     reset_operand(&t.arg2);
-     t.result.type = label_a;
-     t.result.val  = nextinstructionlabel() + 2;
-     instructions_emit(t);
+     t.opcode = jump_v;  
+     reset_operand (&t.arg1);  
+     reset_operand(&t.arg2);  
+     t.result.type = label_a;  
+     t.result.val  = nextinstructionlabel() + 2;  
+     instructions_emit(t);    
 
-     t.opcode = assign_v;
-     make_booloperand(&t.arg1, true);
-     reset_operand(&t.arg2);
-     make_operand(quad->result, &t.result);
-     instructions_emit(t);
+     t.opcode = assign_v;  
+     make_booloperand(&t.arg1, true);  
+     reset_operand(&t.arg2);  
+     make_operand(quad->result, &t.result);  
+     instructions_emit(t); 
 }
 
-void generate_PARAM(Quad* quad) {
+void generate_PARAM(Quad* quad) {  
      quad->taddress = nextinstructionlabel();
-     instruction t;
-     reset_operand(&t.arg1);
-     reset_operand(&t.arg2);
-     reset_operand(&t.result);
+     instruction t;  
      t.opcode = pusharg_v;
-     make_operand(quad->arg1, &t.arg1);
-     instructions_emit(t);
-}
+     make_operand(quad->arg1, &t.arg1);  
+     instructions_emit(t); 
+}   
 
 void generate_CALL(Quad* quad) {
-     quad->taddress = nextinstructionlabel();
-     instruction t;
-     reset_operand(&t.arg1);
-     reset_operand(&t.arg2);
-     reset_operand(&t.result);
-     t.opcode = call_v;
+     quad->taddress = nextinstructionlabel();  
+     instruction t;  
+     t.opcode = call_v;  
      make_operand(quad->arg1, &t.arg1);
-     instructions_emit(t);
-}
+     instructions_emit(t); 
+}   
 void generate_GETRETVAL(Quad* quad) {
      quad->taddress = nextinstructionlabel();
      instruction t;
-     reset_operand(&t.arg1);
-     reset_operand(&t.arg2);
-     reset_operand(&t.result);
      t.opcode = assign_v;
-     make_operand(quad->result, &t.result);
-     make_retvaloperand(&t.arg1);
+     make_operand(quad->result, &t.result);  
+     make_retvaloperand(&t.arg1);  
      instructions_emit(t);
 }
 
@@ -384,19 +370,16 @@ void generate_FUNCSTART(Quad* quad){
      f = quad->arg1->sym;
      f->taddress = nextinstructionlabel();
      quad->taddress = nextinstructionlabel();
-
+ 
+     userfuncs_newfunc(f);
+     stack_push(stack, f);
 
      instruction t;
-     reset_operand(&t.arg1);
-     reset_operand(&t.arg2);
-     reset_operand(&t.result);
-
      t.opcode = funcenter_v;
      make_operand(quad->arg1 , &t.result);
 
-     t.result.val = userfuncs_newfunc(f);
-     stack_push(stack, f);
-
+     reset_operand(&t.arg1);
+     reset_operand(&t.arg2);
      instructions_emit(t);
 }
 
@@ -426,11 +409,10 @@ void generate_FUNCEND(Quad* quad){
      instruction t;
      reset_operand(&t.arg1);
      reset_operand(&t.arg2);
-     Symbol* f = stack_pop(stack);
+     stack_pop(stack);
      quad->taddress = nextinstructionlabel();
      t.opcode = funcexit_v;
      make_operand(quad->arg1 , &t.result);
-     t.result.val = instructions[f->taddress].result.val;
      instructions_emit(t);
 }
 
@@ -448,53 +430,49 @@ void print_instructions(FILE* fp, vmarg arg) {
           char* str;
           str = (char*) malloc(sizeof(char)*30);
           switch ( arg.type) {
-               case label_a        : sprintf(str, "|00,%d", arg.val); break;
-               case global_a       : sprintf(str, "|01,%d:%s", arg.val ,arg.id); break;
-               case formal_a       : sprintf(str, "|02,%d:%s", arg.val ,arg.id); break;
-               case local_a        : sprintf(str, "|03,%d:%s", arg.val ,arg.id); break;
-               case bool_a         : sprintf(str, "|06,%d:%s", arg.val ,arg.id); break;
-               case retval_a       : sprintf(str, "|10") ; break;
-               case nil_a          : sprintf(str, "|07"); break;
-               case number_a       : sprintf(str, "|04,%d:%f", arg.val, numConsts[arg.val]); break;
-               case string_a       : sprintf(str, "|05,%d:\"%s\"", arg.val, stringConsts[arg.val]); break;
-               case userfunc_a     : sprintf(str, "|08,%d:%s", arg.val, userFuncs[arg.val].id); break;
-               case libfunc_a      : sprintf(str, "|09,%d:%s", arg.val,namedLibfuncs[arg.val]); break;
-               default             : return;
+               case label_a        : sprintf(str, "|00(label) %d", arg.val); break;
+               case global_a       : sprintf(str, "|01(global) %d:%s", arg.val ,arg.id); break;
+               case formal_a       : sprintf(str, "|02(formal) %d:%s", arg.val ,arg.id); break;
+               case local_a        : sprintf(str, "|03(local) %d:%s", arg.val ,arg.id); break;
+               case bool_a         : sprintf(str, "|06(boolean) %d:%s", arg.val ,arg.id); break;
+               case retval_a       : sprintf(str, "|10(retval)") ; break;
+               case nil_a          : sprintf(str, "|07(NULL)"); break;
+               case number_a       : sprintf(str, "|04(num) %d:%f", arg.val, numConsts[arg.val]); break;
+               case string_a       : sprintf(str, "|05(string) %d:%s", arg.val, stringConsts[arg.val]); break;
+               case userfunc_a     : sprintf(str, "|08(userfunc) %d:%s", arg.val, userFuncs[arg.val].id); break;
+               case libfunc_a      : sprintf(str, "|09(libfunc) %d:%s", arg.val,namedLibfuncs[arg.val]); break;
+               default             : assert(0);
           }
           fprintf(fp, "%-30s", str);
 }
 
 void print_string(FILE* fp) {
-     fprintf(fp, "\n_stringConsts: %d\n", totalStringConsts);
-		 int i;
-     for (i = 0; i < totalStringConsts; i++) {
+     fprintf(fp, "\nstringConsts: \n");
+     for (int i = 0; i < totalStringConsts; i++) {
           fprintf(fp, "%d\t", i);
-          fprintf(fp, "|\"%s\"\n", stringConsts[i]);
+          fprintf(fp, "|%s\n", stringConsts[i]);
      }
 }
 
 void print_num(FILE* fp) {
-     fprintf(fp, "\n_numConsts: %d\n", totalNumConsts);
-		 int i;
-     for (i = 0; i < totalNumConsts; i++) {
+     fprintf(fp, "\nnumConsts: \n");
+     for (int i = 0; i < totalNumConsts; i++) {
           fprintf(fp, "%d\t", i);
           fprintf(fp, "|%f\n", numConsts[i]);
      }
 }
 
 void print_libfuncs(FILE* fp) {
-	int i;
-     fprintf(fp, "\n_namedLibFuncs: %d\n", totalNamedLibFuncs);
-     for (i = 0; i < totalNamedLibFuncs; i++) {
+     fprintf(fp, "\nnamedLibFuncs: \n");
+     for (int i = 0; i < totalNamedLibFuncs; i++) {
           fprintf(fp, "%d\t", i);
-          fprintf(fp, "|\"%s\"\n", namedLibfuncs[i]);
+          fprintf(fp, "|%s\n", namedLibfuncs[i]);
      }
 }
 
 void print_userfuncs(FILE* fp) {
-	int i;
-     fprintf(fp, "\n_userfuncs: %d\n", totaluserFuncs);
-     for (i = 0; i < totaluserFuncs; i++) {
+     fprintf(fp, "\nuserfuncs: \n");
+     for (int i = 0; i < totaluserFuncs; i++) {
           fprintf(fp, "%d\t", i);
           fprintf(fp, "|%s: %d: %d\n", userFuncs[i].id, userFuncs[i].localSize, userFuncs[i].address);
      }
@@ -510,11 +488,11 @@ void print_consts(FILE* fp) {
 void generate_bin() {
      char* opcodes[25] = {
      "assign",           "add",              "sub",
-     "mul",              "div",              "mod",
+     "mul",              "div_v",            "mod",
      "uminus",           "and",              "or",
      "not",              "jeq",              "jne",
      "jle",              "jge",              "jlt",
-     "jgt",              "callfunc",         "pusharg",
+     "jqt",              "callfunc",         "pusharg",
      "enterfunc",        "exitfunc",         "newtable",
      "tablegetelem",     "tablesetelem",     "jump",
      "nop"
@@ -522,15 +500,14 @@ void generate_bin() {
      FILE* fp = stdout;
      unsigned magic = 340200501;
      fp = fopen("mikriloulou.abc", "wb");
-     fprintf(fp, "_magic: %d \n", magic);
-     fprintf(fp, "_code: %d\n", nextinstructionlabel());
-		 int i;
-     for (i = 0; i < nextinstructionlabel(); i++) {
+     fprintf(fp, "Magic: %d \n", magic);
+     fprintf(fp, "N\t%-30s%-30s%-30s%-30s\n", "|op", " |res", " |arg1", " |arg2");
+     for ( int i = 0; i < nextinstructionlabel(); i++) {
           vmarg res = (instructions + i)->result;
           vmarg arg1 = (instructions + i)->arg1;
           vmarg arg2 = (instructions + i)-> arg2;
           fprintf(fp, "%d\t", i);
-          fprintf(fp, "|_%-30s", opcodes[instructions[i].opcode]);
+          fprintf(fp, "|%-30s", opcodes[instructions[i].opcode]);
           print_instructions(fp, res);
           print_instructions(fp, arg1);
           print_instructions(fp, arg2);

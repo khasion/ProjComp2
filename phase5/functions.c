@@ -12,11 +12,13 @@ unsigned topsp = 4095;
 avm_memcell stack[AVM_STACKSIZE];
 
 void avm_initstack (unsigned n) {
-     for (unsigned i=0; i < AVM_STACKSIZE; ++i) {
+  unsigned i;
+     for (i=0; i < AVM_STACKSIZE; ++i) {
           AVM_WIPEOUT(stack[i]);
           stack[i].type = undef_m;
      }
-     for (int i = 0; i < codeSize; i++) {
+     
+     for (i = 0; i < codeSize; i++) {
           if ( code[i].result.type == global_a) {
                stack[top--] = *avm_translate_operand(&code[i].result, (avm_memcell*) 0);
           }
@@ -41,7 +43,7 @@ void execute_pusharg(instruction* instr){
      avm_memcell* arg = avm_translate_operand(&instr->arg1, &ax);
      assert(arg);
      avm_assign(&stack[top], arg);
-     ++totalActuals; 
+     ++totalActuals;
      avm_dec_top();
 }
 
@@ -63,7 +65,7 @@ library_func_t avm_getlibraryfunc(char* id) {
      }
      else if (strcmp(id, "typeof") == 0){
           return libfunc_array[1];
-     } 
+     }
      else if (strcmp(id, "totalarguments") == 0) {
           return libfunc_array[2];
      }
@@ -86,7 +88,8 @@ void avm_calllibfunc (char* id){
 
 void libfunc_print(void) {
      unsigned n = avm_totalactuals();
-     for (unsigned i = 0; i < n; ++i) {
+     unsigned i;
+     for (i = 0; i < n; ++i) {
           char* s = avm_tostring(avm_getactual(i));
           puts(s);
           free(s);

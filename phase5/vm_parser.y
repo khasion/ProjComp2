@@ -28,21 +28,21 @@
 }
 %token <dblval>     REAL
 %token <intval>     INT
-%token <strval>     ID TEMP MAGIC CODE STRINGARRAY NUMARRAY 
+%token <strval>     ID TEMP MAGIC CODE STRINGARRAY NUMARRAY
 %token <strval>     LIBARRAY USERFUNCARRAY STRING
 %token <strval>     ASSIGN ADD SUB MUL DIV MOD UMINUS AND OR NOT JEQ JNE JLE JGE JLT JGT CALLFUNC PUSHARG
 %token <strval>     ENTERFUNC EXITFUNC NEWTABLE TABLESETELEM TABLEGETELEM JUMP NOP
-%token <strval>     COLON COMMA BAR NONAME 
+%token <strval>     COLON COMMA BAR NONAME
 
 %type <intval> avmbinaryfile magicnumber codes arrays opcode
-%type <intval> stringConsts numConsts namedLibFuncs userfuncs 
+%type <intval> stringConsts numConsts namedLibFuncs userfuncs
 
 %type <instruct> instructions instruction
 
-%type <strval> libfunc libfuncs string strings 
+%type <strval> libfunc libfuncs string strings
 
-%type <memval> num nums 
-%type <userval> func funcs 
+%type <memval> num nums
+%type <userval> func funcs
 
 %type <vmargval> operand
 
@@ -56,11 +56,11 @@ avmbinaryfile: magicnumber codes arrays {
 
                }
                ;
-     
+
 magicnumber:   MAGIC COLON INT {$$ = $3;}
                ;
 
-codes:     CODE COLON INT{init_code($3);} instructions{;}; 
+codes:     CODE COLON INT{init_code($3);} instructions{;};
 
 instructions:  instruction {;}
                | instructions instruction {;}
@@ -117,7 +117,7 @@ operand:  BAR INT COMMA INT COLON ID {
                $$->val = $4;
                $$->id = strdup($6);
                $$->type = $2;
-               
+
           }
           | BAR INT COMMA INT COLON REAL {
                char* name;
@@ -165,7 +165,7 @@ strings:  string{ $$ = $1;}
           | strings string { $$ = $2;}
           ;
 
-string:   INT BAR STRING { 
+string:   INT BAR STRING {
                consts_newstring($3);
           }
           ;
@@ -177,7 +177,7 @@ numConsts:     NUMARRAY COLON INT nums {;}
 nums:     num {;}
           | nums num{;};
 
-num:      INT BAR REAL { 
+num:      INT BAR REAL {
                consts_newnumber($3);
           };
 
@@ -189,7 +189,7 @@ libfuncs:      libfunc {;}
                | libfuncs libfunc {;}
 
 libfunc:       INT BAR STRING {
-                    libfuncs_newused($3);             
+                    libfuncs_newused($3);
                }
 
 userfuncs:     USERFUNCARRAY COLON INT funcs {;}
@@ -205,7 +205,7 @@ func:     INT BAR ID COLON INT COLON INT {
                $$->localSize = (unsigned)$5;
                $$->address = (unsigned)$7;
                userfuncs_newfunc(*$$);
-               
+
           }
           | INT BAR NONAME COLON INT COLON INT {
                $$ = (userfunc*)  malloc(sizeof(userfunc));
