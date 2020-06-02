@@ -4,8 +4,8 @@
 
 #define AVM_STACKSIZE    4096
 extern avm_memcell stack[AVM_STACKSIZE];
-extern unsigned top;
-extern unsigned topsp;
+extern int top;
+extern int topsp;
 
 #define AVM_NUMACTUALS_OFFSET 4 
 #define AVM_SAVEDTOP_OFFSET 2 
@@ -29,12 +29,12 @@ void avm_callsaveenviroment(void);
 void avm_dec_top (void);
 
 void avm_push_envvalue();
-unsigned avm_get_envvalue (unsigned i);
+int avm_get_envvalue (int i);
 
-unsigned avm_totalactuals (void);
-avm_memcell* avm_getactual (unsigned i);
+int avm_totalactuals (void);
+avm_memcell* avm_getactual (int i);
 
-userfunc* avm_getfuncinfo(unsigned address);
+userfunc* avm_getfuncinfo(int address);
 library_func_t avm_getlibraryfunc(char* id);
 
 void avm_calllibfunc(char* funcName);

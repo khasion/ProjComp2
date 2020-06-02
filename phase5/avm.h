@@ -5,19 +5,20 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
+#include <stdbool.h>
 #include "mem.h"
 #include "relop.h"
 #include "arith.h"
 #include "functions.h"
 
-extern unsigned pc;
-extern unsigned char executionFinished;
+extern int pc;
+extern int executionFinished;
 extern avm_memcell ax;
 extern avm_memcell bx;
 extern avm_memcell cx;
 extern avm_memcell retval;
-extern unsigned totalActuals;
-extern unsigned codeSize;
+extern int totalActuals;
+extern int codeSize;
 
 typedef enum vmopcode {
      assign_v,           add_v,              sub_v,
@@ -25,7 +26,7 @@ typedef enum vmopcode {
      uminus_v,           and_v,              or_v,
      not_v,              jeq_v,              jne_v,
      jle_v,              jge_v,              jlt_v,
-     jqt_v,              call_v,             pusharg_v,
+     jgt_v,              call_v,             pusharg_v,
      funcenter_v,        funcexit_v,         newtable_v,
      tablegetelem_v,     tablesetelem_v,     jump_v,
      nop_v
@@ -49,7 +50,7 @@ typedef enum vmarg_t {
 typedef struct vmarg {
      vmarg_t   type;
      char*     id;
-     unsigned  val;
+     int       val;
 }vmarg;
 
 typedef struct instruction {
@@ -57,8 +58,8 @@ typedef struct instruction {
      vmarg     result;
      vmarg     arg1;
      vmarg     arg2;
-     unsigned  label;
-     unsigned  srcLine;
+     int       label;
+     int       srcLine;
 }instruction;
 
 extern instruction* code;
@@ -66,12 +67,11 @@ extern instruction* code;
 void print_stack();
 void print_code();
 void emit_code(instruction t);
-void init_code(unsigned size);
+void init_code(int size);
 
 #define AVM_ENDING_PC codeSize
 #define AVM_STACKENV_SIZE 4
-#define AVM_MAX_INSTRUCTIONS (unsigned) nop_v
-
+#define AVM_MAX_INSTRUCTIONS (int) nop_v
 
 typedef void (*execute_func_t)(instruction*);
 extern execute_func_t executeFuncs[];
@@ -101,6 +101,7 @@ void execute_jgt(instruction*);
 void execute_newtable(instruction*);
 void execute_tablegetelem(instruction*);
 void execute_tablesetelem(instruction*);
+void execute_jump (instruction*);
 void execute_nop(instruction*);
 
 

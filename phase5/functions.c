@@ -7,12 +7,12 @@ library_func_t libfunc_array[] = {
      libfunc_totalarguments
 };
 
-unsigned top = 4095;
-unsigned topsp = 4095;
+int top = 4096;
+int topsp = 4095;
 avm_memcell stack[AVM_STACKSIZE];
 
-void avm_initstack (unsigned n) {
-     for (unsigned i=0; i < AVM_STACKSIZE; ++i) {
+void avm_initstack (int n) {
+     for (int i=0; i < AVM_STACKSIZE; i++) {
           AVM_WIPEOUT(stack[i]);
           stack[i].type = undef_m;
      }
@@ -21,6 +21,7 @@ void avm_initstack (unsigned n) {
                stack[top--] = *avm_translate_operand(&code[i].result, (avm_memcell*) 0);
           }
      }
+     printf("%d\n", n);
      topsp = AVM_STACKSIZE - n;
 }
 
@@ -41,12 +42,12 @@ void execute_pusharg(instruction* instr){
      avm_memcell* arg = avm_translate_operand(&instr->arg1, &ax);
      assert(arg);
      avm_assign(&stack[top], arg);
-     ++totalActuals; 
+     ++totalActuals;
      avm_dec_top();
 }
 
 void execute_funcexit (instruction* unused) {
-     unsigned oldTop = top;
+     int oldTop = top;
      top = avm_get_envvalue(topsp + AVM_SAVEDTOP_OFFSET);
      pc = avm_get_envvalue(topsp + AVM_SAVEDPC_OFFSET);
      topsp = avm_get_envvalue(topsp + AVM_SAVEDTOPSP_OFFSET);
@@ -70,7 +71,7 @@ library_func_t avm_getlibraryfunc(char* id) {
      return NULL;
 }
 
-void avm_calllibfunc (char* id){
+void avm_calllibfunc (char* id) {  
      library_func_t f = avm_getlibraryfunc(id);
      if (!f) {
           avm_error("unsupported lib func 's' called!" , id);
@@ -87,23 +88,25 @@ void avm_calllibfunc (char* id){
 void libfunc_print(void) {
      unsigned n = avm_totalactuals();
      for (unsigned i = 0; i < n; ++i) {
-          char* s = avm_tostring(avm_getactual(i));
-          puts(s);
-          free(s);
+          char* s = avm_tostring(avm_getactual(i)); 
+          puts(strdup(s));
+          if (s) {
+               free(s);
+          }
      }
 }
 
-unsigned avm_totalactuals (void) {
+int avm_totalactuals (void) {
   return avm_get_envvalue(topsp + AVM_NUMACTUALS_OFFSET);
 }
 
-avm_memcell* avm_getactual (unsigned i) {
+avm_memcell* avm_getactual (int i) {
   assert(i < avm_totalactuals());
   return &stack[topsp + AVM_STACKENV_SIZE +1 +i];
 }
 
 void libfunc_typeof (void) {
-     unsigned n = avm_totalactuals();
+     int n = avm_totalactuals();
      if(n !=1) avm_error ("one argument (not %d) expected in 'typeof'!", &n);
      else {
           avm_memcellclear(&retval);
@@ -113,7 +116,7 @@ void libfunc_typeof (void) {
 }
 
 void libfunc_totalarguments(){
-     unsigned p_topsp = avm_get_envvalue(topsp + AVM_SAVEDTOPSP_OFFSET);
+     int p_topsp = avm_get_envvalue(topsp + AVM_SAVEDTOPSP_OFFSET);
      avm_memcellclear(&retval);
      if(!p_topsp) {
           avm_error("'totalarguments' called outside a function!", "");
@@ -127,29 +130,29 @@ void libfunc_totalarguments(){
 
 void avm_dec_top (void){
     // printf("top\n");
-     if(!top){/*stack overflow*/
+     if(!top){ /*stack overflow*/
           avm_error("stack overflow", "");
           executionFinished = 1;
      }
      else --top;
 }
 
-void avm_push_envvalue (unsigned val) {
+void avm_push_envvalue (int val) {
      //printf("PUSH\n");
      stack[top].type = number_m;
      stack[top].data.numVal = val;
      avm_dec_top();
 }
 
-unsigned avm_get_envvalue (unsigned i ){
+int avm_get_envvalue (int i ){
      assert(stack[i].type == number_m);
-     unsigned  val = (unsigned) stack[i].data.numVal;
+     int  val = (int) stack[i].data.numVal;
      //printf("GET %d\n", val);
      assert((stack[i].data.numVal) == ((double) val));
      return val;
 }
 
-userfunc* avm_getfuncinfo (unsigned addr) {
+userfunc* avm_getfuncinfo (int addr) {
      userfunc* temp;
      temp = (userfunc*) malloc(sizeof(userfunc));
      temp->address = pc;
@@ -170,7 +173,7 @@ void execute_call (instruction* instr) {
                break;
           }
           case string_m: avm_calllibfunc(func->data.strVal); break;
-          case libfunc_m: avm_calllibfunc(func->data.libfuncVal); break;
+          case libfunc_m: avm_calllibfunc(func->data.libfuncVal);break;
           default: {
                char* s = avm_tostring(func);
                avm_error("call: cannot bind '%s' to function!" , s);

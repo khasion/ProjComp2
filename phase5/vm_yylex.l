@@ -14,6 +14,7 @@ id        [a-zA-Z][a-zA-Z_0-9]*
 temp      [\^][0-9]*
 integer   [0-9]*
 real      [0-9]*\.[0-9](e|E)?[0-9]*
+uminus    [\-][0-9]*\.[0-9](e|E)?[0-9]*
 space     [\r\t \v\n]
 newline   [\n]
 noname    [\_][f][0-9]*
@@ -50,13 +51,16 @@ _tablesetelem          		{yylval.strval = strdup(yytext); return TABLESETELEM;}
 _tablegetelem          		{yylval.strval = strdup(yytext); return TABLEGETELEM;}
 _jump                  		{yylval.strval = strdup(yytext); return JUMP;}
 _nop                   		{yylval.strval = strdup(yytext); return NOP;}
-'true'				   		{yylval.strval = strdup(yytext); return TRUE;}
-'false'				  		{yylval.strval = strdup(yytext); return FALSE;}
+'true'				   	{yylval.strval = strdup(yytext); return TRUE;}
+'false'				  	{yylval.strval = strdup(yytext); return FALSE;}
 
 
 ":"                      {return COLON;}
 ","                      {return COMMA;}
 "|"                      {return BAR;}
+"-"						{return MINUS;}
+
+
 
 "\"" {
      char *str;
@@ -118,9 +122,14 @@ _nop                   		{yylval.strval = strdup(yytext); return NOP;}
   yylval.dblval = atof(yytext);
   return REAL;
 }
+{uminus} {
+	yylval.dblval = atof(yytext);
+	return UMINUS;
+}
 {noname} {
      yylval.strval = strdup(yytext);
      return NONAME;
 }
+
 <<EOF>> { return -1;}
 %%

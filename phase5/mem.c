@@ -5,10 +5,10 @@ char**    stringConsts;
 char**    namedLibfuncs;
 userfunc* userFuncs;
 
-unsigned totalNumConsts = 0;
-unsigned totalStringConsts = 0;
-unsigned totaluserFuncs = 0;
-unsigned totalNamedLibFuncs = 0;
+int totalNumConsts = 0;
+int totalStringConsts = 0;
+int totaluserFuncs = 0;
+int totalNamedLibFuncs = 0;
 
 memclear_func_t (memclearFuncs[]) = {
      0,
@@ -75,7 +75,7 @@ void avm_tabledecrefcounter (avm_table* t) {
 
 void avm_tablebucketsinit (avm_table_bucket** p) {
      p = (avm_table_bucket**) malloc(sizeof(avm_table_bucket)*AVM_TABLE_HASHSIZE);
-     for (unsigned i=0; i < AVM_TABLE_HASHSIZE; ++i) {
+     for (int i=0; i < AVM_TABLE_HASHSIZE; ++i) {
           p[i] = (avm_table_bucket*) malloc(sizeof(avm_table_bucket));
           p[i] = NULL;
      }
@@ -83,13 +83,14 @@ void avm_tablebucketsinit (avm_table_bucket** p) {
 
 void memclear_string(avm_memcell* m){
      assert (m->data.strVal);
+     m->data.strVal = strdup("manos"); 
      free(m->data.strVal);
 }
 
 void avm_memcellclear (avm_memcell* m){
      if (m->type != undef_m){
           memclear_func_t f = memclearFuncs[m->type];
-          if (f){
+          if (f) {
                (*f)(m);
                m->type = undef_m;
           }
@@ -116,7 +117,7 @@ void memclear_table (avm_memcell* m){
 }
 
 void avm_tablebucketsdestroy (avm_table_bucket** p) {
-     for (unsigned i=0; i<AVM_TABLE_HASHSIZE; ++i, ++p) {
+     for (int i=0; i<AVM_TABLE_HASHSIZE; ++i, ++p) {
           for (avm_table_bucket* b = *p; b;) {
                avm_table_bucket* del = b;
                b = b->next;
@@ -137,35 +138,35 @@ void avm_tabledestroy (avm_table* t) {
      free(t);
 }
 
-char* const_getstring(unsigned val) {
+char* const_getstring(int val) {
      return stringConsts[val];
 }
 
-double const_getnumber(unsigned val) {
+double const_getnumber(int val) {
      return numConsts[val];
 }
 
-char* libfuncs_getused(unsigned val) {
+char* libfuncs_getused(int val) {
      return namedLibfuncs[val];
 }
 
-unsigned consts_newstring (char* s) {
+int consts_newstring (char* s) {
      stringConsts[totalStringConsts] = (char*) malloc(sizeof(s));
      sprintf(stringConsts[totalStringConsts++], "%s", s);
      return totalStringConsts - 1;
 }
 
-unsigned consts_newnumber (double d) {
+int consts_newnumber (double d) {
      numConsts[totalNumConsts++] = d;
      return totalNumConsts - 1;
 }
 
-unsigned userfuncs_newfunc (userfunc s) {
+int userfuncs_newfunc (userfunc s) {
      userFuncs[totaluserFuncs++] = s;
      return totaluserFuncs - 1;
 }
 
-unsigned libfuncs_newused (char* s) {
+int libfuncs_newused (char* s) {
      namedLibfuncs[totalNamedLibFuncs] = (char*) malloc(sizeof(s));
      sprintf(namedLibfuncs[totalNamedLibFuncs++], "%s", s);
      return totalNamedLibFuncs - 1;

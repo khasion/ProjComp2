@@ -12,7 +12,7 @@
      extern char* yytext;
      extern FILE* yyin;
 
-     unsigned globalSize = 0;
+     int maxOffset = -1;
 %}
 
 %start program
@@ -26,11 +26,11 @@
      struct instruction* instruct;
      struct vmarg* vmargval;
 }
-%token <dblval>     REAL
-%token <intval>     INT 
-%token <strval>     ID TEMP MAGIC CODE STRINGARRAY NUMARRAY 
+%token <dblval>     REAL  UMINUS
+%token <intval>     INT
+%token <strval>     ID TEMP MAGIC CODE STRINGARRAY NUMARRAY MINUS 
 %token <strval>     LIBARRAY USERFUNCARRAY STRING
-%token <strval>     ASSIGN ADD SUB MUL DIV MOD UMINUS AND OR NOT JEQ JNE JLE JGE JLT JGT CALLFUNC PUSHARG
+%token <strval>     ASSIGN ADD SUB MUL DIV  MOD AND OR NOT JEQ JNE JLE JGE JLT JGT CALLFUNC PUSHARG
 %token <strval>     ENTERFUNC EXITFUNC NEWTABLE TABLESETELEM TABLEGETELEM JUMP NOP 
 %token <strval>     COLON COMMA BAR NONAME TRUE FALSE
 
@@ -46,7 +46,7 @@
 
 %type <vmargval> operand
 
-
+//UMINUS{$$ = 6;}
 %%
 program:  avmbinaryfile{;}
           ;
@@ -82,7 +82,7 @@ opcode:   ASSIGN{$$ = 0;}
           | MUL{$$ = 3;}
           | DIV{$$ = 4;}
           | MOD{$$ = 5;}
-          | UMINUS{$$ = 6;}
+          
           | AND{$$ = 7;}
           | OR{$$ = 8;}
           | NOT{ $$ = 9;}
@@ -108,16 +108,18 @@ operand:  BAR INT COMMA INT COLON ID {
                $$->val = $4;
                $$->id = strdup($6);
                $$->type = $2;
-               if ( $$->val == 1) {
-                    globalSize++;
+               if ( $$->val > maxOffset) {
+                    maxOffset = $$->val;
                }
           }
-               | BAR INT COMMA INT COLON TEMP {
+          | BAR INT COMMA INT COLON TEMP {
                $$ = (vmarg*) malloc(sizeof(vmarg));
                $$->val = $4;
                $$->id = strdup($6);
                $$->type = $2;
-               
+               if ( $$->val > maxOffset) {
+                    maxOffset = $$->val;
+               }
           }
           | BAR INT COMMA INT COLON REAL {
                char* name;
@@ -125,6 +127,16 @@ operand:  BAR INT COMMA INT COLON ID {
                name = (char*) malloc(sizeof(char)*50);
                $$->val = $4;
                sprintf(name, "constnums_%f", $6);
+               $$->id = strdup(name);
+               $$->type = $2;
+
+          }
+          | BAR INT COMMA INT COLON UMINUS {
+               char* name;
+               $$ = (vmarg*) malloc(sizeof(vmarg));
+               name = (char*) malloc(sizeof(char)*50);
+               $$->val = $4;
+               sprintf(name, "constnums_%f", ($6)*-1);
                $$->id = strdup(name);
                $$->type = $2;
 
@@ -193,6 +205,9 @@ nums:     num {;}
 num:      INT BAR REAL { 
                consts_newnumber($3);
           }
+          | INT BAR UMINUS {
+               consts_newnumber($3);
+          }
           ;
 
 namedLibFuncs: LIBARRAY COLON INT libfuncs{;}
@@ -243,13 +258,14 @@ int main(int argc, char** argv){
                fprintf(stderr, "Cannot read  file: %s\n", argv[1]);
                return 1;
           }
-     } else {
+     } 
+     else {
           yyin = stdin;
      }
      yyparse();
-     avm_initstack(globalSize);
+     avm_initstack(maxOffset);
      print_code();
      execute_cycle();
-     //print_stack();
+    /// print_stack();
      return 0;
 }

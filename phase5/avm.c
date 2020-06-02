@@ -1,12 +1,12 @@
 #include "avm.h"
 
-unsigned currLine = 0;
-unsigned pc = 0;
-unsigned char executionFinished = 0;
-unsigned totalActuals = 0;
-unsigned codeSize = 0;
+int currLine = 0;
+int pc = 0;
+int executionFinished = 0;
+int totalActuals = 0;
+int codeSize = 0;
 instruction* code = (instruction*) 0;
-unsigned currCode = 0;
+int currCode = 0;
 avm_memcell ax;
 avm_memcell bx;
 avm_memcell cx;
@@ -36,10 +36,11 @@ execute_func_t executeFuncs[] = {
      execute_newtable,
      execute_tablegetelem,
      execute_tablesetelem,
+     execute_jump,
      execute_nop
 };
 
-void init_code(unsigned size) {
+void init_code(int size) {
      code = (instruction*) malloc(sizeof(instruction)* size);
      for (int i=0; i < size; i++) {
           code[i].arg1.type = nil_a;
@@ -79,7 +80,12 @@ void print_operand(vmarg arg) {
 
 void print_stack() {
      for (int i = AVM_STACKSIZE-1; stack[i].type != undef_m; i--) {
-          printf("%d: %f\n", i, stack[i].data.numVal);
+          switch (stack[i].type){
+               case string_m  : printf("string: %d: %s\n", i, stack[i].data.strVal); break;
+               case number_m  : printf("number: %d: %f\n", i, stack[i].data.numVal); break;
+               case bool_m    : printf("bool: %d: %d\n", i, stack[i].data.boolVal); break;
+          }
+          
      }
 }
 
@@ -90,7 +96,7 @@ void print_code () {
           "uminus",           "and",              "or",
           "not",              "jeq",              "jne",
           "jle",              "jge",              "jlt",
-          "jqt",              "call",             "pusharg",
+          "jgt",              "call",             "pusharg",
           "funcenter",        "funcexit",         "newtable",
           "tablegetelem",     "tablesetelem",     "jump",
           "nop"     
@@ -105,8 +111,8 @@ void print_code () {
      printf("-----------------------------------------\n");
 }
 
-avm_memcell* avm_translate_operand(vmarg* arg, avm_memcell* reg){
-     switch(arg->type){
+avm_memcell* avm_translate_operand(vmarg* arg, avm_memcell* reg) {
+     switch(arg->type) {
           /*Variables*/
           case global_a: return &stack[AVM_STACKSIZE-1-arg->val]; 
           case local_a:  return &stack[topsp-arg->val];
@@ -152,10 +158,11 @@ void execute_cycle(void) {
           assert(pc < AVM_ENDING_PC );
           instruction* instr = code + pc;
           assert(instr->opcode >= 0 && instr->opcode <= AVM_MAX_INSTRUCTIONS);
+          
           if (instr-> srcLine) {
                currLine = instr->srcLine;
           }
-          unsigned oldPC = pc;
+          int oldPC = pc;
           (*executeFuncs[instr->opcode])(instr);
           if (pc == oldPC) {
                ++pc;
@@ -182,9 +189,12 @@ void avm_assign (avm_memcell* lv, avm_memcell* rv){
           avm_warning("assigning from 'undef' content!");
      }
      avm_memcellclear(lv);
-     memcpy(lv , rv , sizeof(avm_memcell));
-     if (lv->type == string_m) lv->data.strVal= strdup(rv->data.strVal);
-     else if (lv->type == table_m) avm_tableincrefcounter(lv->data.tableVal);
+     memcpy(lv, rv, sizeof(avm_memcell));
+     /*if (lv->type == string_m) {
+          printf("lv: %s \n, rv: %s\n", lv->data.strVal, rv->data.strVal);
+          //lv->data.strVal = strdup(rv->data.strVal);
+     }*/
+     if (lv->type == table_m) avm_tableincrefcounter(lv->data.tableVal);
 }
 
 void execute_assign (instruction* instr) {
@@ -192,10 +202,11 @@ void execute_assign (instruction* instr) {
      avm_memcell* rv = avm_translate_operand(&instr->arg1 , &ax);
      //printf("ARG1 %s %f  RESULT %s %f \n",instr->result.id, lv->data.numVal ,instr->arg1.id ,rv->data.numVal);
      assert(lv);
-     //assert(&stack[AVM_STACKSIZE-1] <= lv);
-     //assert(lv > &stack[top] || lv == &retval);
-     //assert(lv && ( &stack[AVM_STACKSIZE-1] <= lv && lv > &stack[top] || lv == &retval));
-     //assert(rv && ( &stack[AVM_STACKSIZE-1] <= rv && lv > &stack[top] || rv == &retval));
+     assert(rv);
+     assert(&stack[AVM_STACKSIZE] >= lv);
+     assert(lv >= &stack[top]);
+     //assert(lv && ( &stack[AVM_STACKSIZE] >= lv && lv <= &stack[top]) || lv == &retval);
+     //assert(rv && ( &stack[AVM_STACKSIZE] >= rv && rv < &stack[top] || rv == &retval));
 
      avm_assign(lv,rv);
 }
@@ -204,50 +215,6 @@ void execute_uminus(instruction* t){}
 void execute_and(instruction* t) {}
 void execute_or(instruction* t) {}
 void execute_not(instruction* t) {}
-
-void execute_jeq(instruction* instr){
-     assert(instr->result.type == label_a);
-
-     avm_memcell* rv1 = avm_translate_operand(&instr->arg1, &ax);
-	avm_memcell* rv2 = avm_translate_operand(&instr->arg2, &bx);
-     unsigned char result = 0;
-
-     if (rv1->type == undef_m || rv2->type == undef_m) {
-          avm_error("'Undef' involved in equality!", "");
-	}
-     else if(rv1->type == nil_m || rv2->type == nil_m) {
-		result = (rv1->type == nil_m) && (rv2->type == nil_m);
-	}
-     else if(rv1->type == bool_m || rv2->type == bool_m) {
-		result=rv1->data.boolVal == rv2->data.boolVal;
-	} 
-     else if(rv1->type !=rv2->type) {
-		avm_error("String is illegal!", "");
-	}
-     else {
-          printf("NATALIA\n");
-     }
-     
-     if(!executionFinished && result){
-          pc = instr->result.val;
-     }
-}
-void execute_jne(instruction* t) {
-
-}
-void execute_jle(instruction* t) {
-
-}
-void execute_jge(instruction* t) {
-
-}
-void execute_jlt(instruction* t) {
-
-}
-void execute_jgt(instruction* t) {
-
-}
-
 void execute_nop(instruction* t){
      
 }

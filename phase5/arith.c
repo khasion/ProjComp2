@@ -35,7 +35,6 @@ double add_impl( double x, double y ) {
 double sub_impl( double x, double y ) {return x-y;}
 
 double mul_impl( double x, double y ) {
-	printf("mul x: %f y: %f\n", x, y);
 	return x*y;}
 
 double div_impl( double x, double y ){

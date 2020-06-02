@@ -1,9 +1,11 @@
 #ifndef MEM_H
 #define MEM_H
 #include <stdio.h>
+#include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
+
 
 typedef enum avm_memcell_t {
      number_m       = 0,
@@ -22,9 +24,9 @@ typedef struct avm_memcell {
      union {
           double              numVal;
           char*               strVal;
-          unsigned char       boolVal;
+          bool                boolVal;
           struct avm_table*   tableVal;
-          unsigned            funcVal;
+          int                 funcVal;
           char*               libfuncVal;
      }data;
 }avm_memcell;
@@ -48,18 +50,18 @@ typedef struct avm_table_bucket {
 }avm_table_bucket;
 
 typedef struct avm_table {
-     unsigned            refCounter;
+     int                 refCounter;
      avm_table_bucket*   strIndexed[AVM_TABLE_HASHSIZE];
      avm_table_bucket*   numIndexed[AVM_TABLE_HASHSIZE];
      avm_table_bucket*   boolIndexed[AVM_TABLE_HASHSIZE];
      avm_table_bucket*   userFuncIndexed[AVM_TABLE_HASHSIZE];
      avm_table_bucket*   libFuncIndexed[AVM_TABLE_HASHSIZE];
-     unsigned            total;
+     int            total;
 }avm_table;
 
 typedef struct userfunc {
-     unsigned  address;
-     unsigned  localSize;
+     int  address;
+     int  localSize;
      char*     id;
 }userfunc;
 
@@ -67,16 +69,16 @@ typedef void (*memclear_func_t)(avm_memcell*);
 extern memclear_func_t memclearFuncs[];
 
 extern double*   numConsts;
-extern unsigned  totalNumConsts;
+extern int  totalNumConsts;
 
 extern char**    stringConsts;
-extern unsigned  totalStringConsts;
+extern int  totalStringConsts;
 
 extern char**    namedLibfuncs;
-extern unsigned  totalNamedLibFuncs;
+extern int  totalNamedLibFuncs;
 
 extern userfunc* userFuncs;
-extern unsigned  totaluserFuncs;
+extern int  totaluserFuncs;
 
 void avm_tableincrefcounter (avm_table* t);
 void avm_tabledecrefcounter (avm_table* t);
@@ -87,14 +89,14 @@ void memclear_string(avm_memcell*);
 void memclear_table(avm_memcell*);
 
 
-double const_getnumber(unsigned index);
-char* const_getstring(unsigned index);
-char* libfuncs_getused(unsigned index);
+double const_getnumber(int index);
+char* const_getstring(int index);
+char* libfuncs_getused(int index);
 
-unsigned consts_newstring (char* s);
-unsigned consts_newnumber (double d);
-unsigned userfuncs_newfunc (userfunc s);
-unsigned libfuncs_newused (char* s); 
+int consts_newstring (char* s);
+int consts_newnumber (double d);
+int userfuncs_newfunc (userfunc s);
+int libfuncs_newused (char* s); 
 
 void initMem();
 

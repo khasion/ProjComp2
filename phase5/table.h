@@ -1,7 +1,7 @@
 #ifndef TABLE_H
 #define TABLE_H
+#include "conv.h"
 #include "avm.h"
-
 
 extern char* typeStrings[];
 
