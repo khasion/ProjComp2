@@ -14,7 +14,6 @@
      extern char* yytext;
      extern FILE* yyin;
      unsigned loopcounter = 0;
-     unsigned retaddr = 0;
 %}
 
 %start program
@@ -143,9 +142,7 @@ expr: 	assignexpr { $$ = $1;}
                $$->truelist = newlist(nextquad());
                $$->falselist = newlist(nextquad() + 1);
                emit(if_greater, $1, $3, NULL, 0, yylineno);
-               //emit(assign, newexpr_constbool('0'), NULL, $$, nextquad() + 1, yylineno);
                emit(jump, NULL, NULL, NULL , 0, yylineno);
-               //emit(assign, newexpr_constbool('1'), NULL, $$, nextquad() + 1, yylineno);
           }
           | expr GREATER_EQ expr {
                $$ = newexpr(boolexpr_e);
@@ -153,9 +150,7 @@ expr: 	assignexpr { $$ = $1;}
                $$->truelist = newlist(nextquad());
                $$->falselist = newlist(nextquad()+1);
                emit(if_lesseq, $1, $3, NULL, 0, yylineno);
-               //emit(assign, newexpr_constbool('0'), NULL, $$, 69, yylineno);
                emit(jump, NULL, NULL, NULL , 0, yylineno);
-               //(assign, newexpr_constbool('1'), NULL, $$, 69 ,yylineno);
           }
           | expr LESS expr {
                $$ = newexpr(boolexpr_e);
@@ -163,9 +158,7 @@ expr: 	assignexpr { $$ = $1;}
                $$->truelist = newlist(nextquad());
                $$->falselist = newlist(nextquad()+1);
                emit(if_less, $1, $3, NULL, 0, yylineno);
-               //emit(assign, newexpr_constbool('0'), NULL, $<exprval>$, 69,yylineno);
                emit(jump, NULL, NULL, NULL , 0, yylineno);
-               //emit(assign, newexpr_constbool('1'), NULL, $<exprval>$, 69 , yylineno);
            }
           | expr LESS_EQ expr {
                $$ = newexpr(boolexpr_e);
@@ -175,9 +168,7 @@ expr: 	assignexpr { $$ = $1;}
                $$->falselist = newlist(nextquad()+1);
 
                emit(if_greatereq, $1, $3, $$, 0, yylineno);
-               //emit(assign, newexpr_constbool('0'), NULL, $<exprval>$, 69,yylineno);
                emit(jump, NULL, NULL, NULL , 0, yylineno);
-               //emit(assign, newexpr_constbool('1'), NULL, $<exprval>$, 69 , yylineno);
           }
           | expr EQ expr {
                $$ = newexpr(boolexpr_e);
@@ -185,9 +176,7 @@ expr: 	assignexpr { $$ = $1;}
                $$->truelist = newlist(nextquad());
                $$->falselist = newlist(nextquad()+1);
                emit(if_eq, $1, $3, $$, 0, yylineno);
-               //emit(assign, newexpr_constbool('0'), NULL, $<exprval>$, 69,yylineno);
                emit(jump, NULL, NULL, NULL , 0, yylineno);
-               //emit(assign, newexpr_constbool('1'), NULL, $<exprval>$, 69 , yylineno);
            }
           | expr NOT_EQ expr {
                $$ = newexpr(boolexpr_e);
@@ -195,9 +184,7 @@ expr: 	assignexpr { $$ = $1;}
                $$->truelist = newlist(nextquad());
                $$->falselist = newlist(nextquad()+1);
                emit(if_noteq, $1, $3, NULL, 0, yylineno);
-               //emit(assign, newexpr_constbool('0'), NULL, $<exprval>$, 69,yylineno);
                emit(jump, NULL, NULL, NULL , 0, yylineno);
-               //emit(assign, newexpr_constbool('1'), NULL, $<exprval>$, 69 , yylineno);
            }
           | expr AND {
                if( $1 && $1->type != 5){
@@ -244,7 +231,7 @@ expr: 	assignexpr { $$ = $1;}
                $$->truelist = mergelist($1->truelist, $5->truelist);
                $$->falselist = $5->falselist;
           }
-          | term {$$ = $1;}
+          | term {$$ = $1; }
           ;
 
 term: 	L_PAR expr R_PAR {$$ = $2;}
@@ -255,12 +242,6 @@ term: 	L_PAR expr R_PAR {$$ = $2;}
                emit(uminus, $2, NULL, $$, nextquad() + 1,yylineno); 
           }
           | NOT expr {
-               /*if($2->type != 5){
-                    $2->truelist = newlist(nextquad());
-                    $2->falselist = newlist(nextquad()+1);
-                    emit(if_eq, $2, newexpr_constbool(1), NULL, 0, yylineno);
-                    emit(jump, NULL, NULL, NULL , 0, yylineno);
-               }*/
                $2->truelist = newlist(nextquad());
                $2->falselist = newlist(nextquad() + 1);
                emit(if_eq, $2, newexpr_constbool(1), NULL, 0, yylineno);
@@ -547,8 +528,6 @@ funcblockstart:{ push(&loopcounterstack, loopcounter); loopcounter=0;};
 funcblockend:	{ loopcounter = pop(&loopcounterstack); }
 
 funcdef: 	funcprefix funcargs funcblockstart funcbody funcblockend {
-               patchlabel(retaddr, nextquad());
-               retaddr=0;
                int offset;
                $funcprefix->totalLocals = $funcbody;
                exitscopespace();
@@ -565,7 +544,7 @@ funcdef: 	funcprefix funcargs funcblockstart funcbody funcblockend {
 
 const: 	INT { $$ = newexpr_constnum($1);}
           | REAL {$$ = newexpr_constnum($1);}
-          | STRING { $$ = newexpr_conststring($1);}
+          | STRING {$$ = newexpr_conststring($1);}
           | NIL { $$ = newexpr(nil_e);}
           | TRUE { $$ = newexpr_constbool(1);}
           | FALSE { $$ = newexpr_constbool(0);}
@@ -674,16 +653,12 @@ returnstmt: 	RETURN SEMI {
                     if (currfuncscope() == 0) Error(2, yytext, yylineno);
                     else {
                          emit(ret, NULL, NULL, NULL, nextquad() + 1, yylineno);
-                         retaddr = nextquad();
-                         emit(jump, NULL, NULL, NULL, 0, yylineno);
                     }
                }
                | RETURN expr SEMI {
                     if (currfuncscope() == 0) Error(2, yytext, yylineno);
                     else {
                          emit(ret, $2, NULL, NULL, nextquad() + 1, yylineno);
-                         retaddr = nextquad();
-                         emit(jump, NULL, NULL, NULL, 0, yylineno);
                     }
                }
                ;

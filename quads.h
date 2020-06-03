@@ -79,6 +79,7 @@ typedef struct call {
 
 extern Quad* quads;
 
+
 void patchboolean(Expr* e, int line);
 
 Expr* member_item (Expr* lv, char* name, int line);

@@ -6,6 +6,9 @@ unsigned int currQuad = 1;
 
 unsigned int tempcounter = 0;
 
+
+
+
 int isInteger(double i) {
      int temp = (int)i;
      return ( temp == i);
@@ -181,11 +184,13 @@ Expr* newexpr_constnum(double i) {
 
 Expr* newexpr_conststring(char* s) {
      Expr* tmp = newexpr(conststring_e);
+     tmp->strConst = (char*) malloc(sizeof(s));
      tmp->sym = (Symbol*) malloc(sizeof(Symbol));
      tmp->sym->name = (char*) malloc(sizeof(s));
-     sprintf(tmp->sym->name, "\"%s\"", s);  
-     tmp->strConst = strdup(s);
+     sprintf(tmp->sym->name, "\"%s\"", s); 
+     sprintf(tmp->strConst, "%s",s);
      //tmp->type = conststring_e;
+    
      return tmp;
 }
 
@@ -223,8 +228,6 @@ Expr* lvalue_expr(Symbol* sym){
      e->sym->offset = sym->offset;
      e->sym->scope = sym->scope;
      e->sym->line = sym->line;
-
-     if (!istempname(sym->name)) incurrscopeoffset();
 
      switch(sym->type){
           case localvar_s		: e->type = var_e; break;

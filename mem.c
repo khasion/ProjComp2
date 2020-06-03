@@ -76,11 +76,3 @@ Symbol* stack_pop(avm_memcell* stack) {
      return data;
 }
 
-retList* append(retList* returnList, unsigned label) {
-     retList* new_ret;
-     new_ret = (retList*) malloc(sizeof(retList));
-     new_ret->retVal = label;
-     new_ret->next = returnList;
-     returnList = new_ret;
-     return returnList;
-}

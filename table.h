@@ -83,7 +83,7 @@ void resetformalargsoffset();
 void resetfunctionlocaloffset();
 void restorecurrscopeoffset();
 
-unsigned currscopespaceoffset();
+int currscopespaceoffset();
 void incurrscopeoffset();
 
 SymTable* create_new_symtable();

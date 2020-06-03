@@ -6,6 +6,7 @@
 #include <string.h>
 #include <assert.h>
 
+#define AVM_TABLE_HASHSIZE    211
 
 typedef enum avm_memcell_t {
      number_m       = 0,
@@ -36,18 +37,13 @@ typedef struct avm_memcell {
 
 typedef void (*memclear_func_t)(avm_memcell*);
 
-struct avm_table*   avm_tablenew(void);
-void                avm_tabledestroy (struct avm_table* t);
-avm_memcell*        avm_tablegetelem (avm_memcell* t, avm_memcell* index);
-void                avm_tablesetelem (avm_memcell* t, avm_memcell* index, avm_memcell* content);
-
-#define AVM_TABLE_HASHSIZE    211
 
 typedef struct avm_table_bucket {
      avm_memcell              key;
      avm_memcell              value;
      struct avm_table_bucket* next;
 }avm_table_bucket;
+
 
 typedef struct avm_table {
      int                 refCounter;
@@ -60,8 +56,8 @@ typedef struct avm_table {
 }avm_table;
 
 typedef struct userfunc {
-     int  address;
-     int  localSize;
+     int       address;
+     int       localSize;
      char*     id;
 }userfunc;
 
@@ -79,9 +75,6 @@ extern int  totalNamedLibFuncs;
 
 extern userfunc* userFuncs;
 extern int  totaluserFuncs;
-
-void avm_tableincrefcounter (avm_table* t);
-void avm_tabledecrefcounter (avm_table* t);
 
 void avm_memcellclear (avm_memcell* m);
 

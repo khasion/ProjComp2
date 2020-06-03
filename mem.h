@@ -83,5 +83,3 @@ void initMem();
 void stack_push(avm_memcell* stack, Symbol* s);
 Symbol* stack_top(avm_memcell* stack);
 Symbol* stack_pop(avm_memcell* stack);
-
-retList* append(retList* returnList, unsigned label);

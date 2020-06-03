@@ -8,9 +8,9 @@ int func_id = 0;
 unsigned globalscope 		= 0;
 unsigned funcscope 			= 0;
 unsigned scopespacecounter 	= 1;
-unsigned formalargoffset 	= 0;
-unsigned functionlocaloffset 	= 0;
-unsigned programvaroffset 	= 0;
+int formalargoffset 	= 0;
+int functionlocaloffset 	= 0;
+int programvaroffset 	= 0;
 
 unsigned currfuncscope() {
 	return funcscope;
@@ -72,7 +72,7 @@ void restorecurrscopeoffset(unsigned n){
 	}
 }
 
-unsigned currscopespaceoffset(void) {
+int currscopespaceoffset(void) {
 	switch (currscopespace()) {
 		case programvar	:	return programvaroffset;
 		case functionlocal	:	return functionlocaloffset;
@@ -89,6 +89,7 @@ void incurrscopeoffset(void) {
 		default: assert(0);
 	}
 }
+
 
 /* ------------------------------------------------------------------------------------------------------------ */
 
@@ -132,7 +133,6 @@ Symbol* lvalue_id (char* yytext, unsigned yylineno) {
 	}
 	if (!flag) {
 		temp = table_insert(var_s, yytext, currscopespace(), currscopespaceoffset(), currscope(), currfuncscope(), yylineno);
-		//incurrscopeoffset();
 	}
 	return temp;
 }
@@ -147,11 +147,9 @@ Symbol* lvalue_localid(char* yytext, unsigned yylineno) {
 	if ( !temp || temp->hide) {
 		if (currscope() >= 0) {
 			temp = table_insert(localvar_s, yytext, currscopespace(), currscopespaceoffset(), currscope(), currfuncscope(), yylineno);
-			//incurrscopeoffset();
 		}
 		else {
 			temp = table_insert(globalvar_s, yytext, currscopespace(), currscopespaceoffset(), currscope(), currfuncscope(), yylineno);
-			//incurrscopeoffset();
 		}
 	}
 	return temp;
@@ -207,7 +205,6 @@ Symbol* idlist_id(char* yytext, unsigned yylineno) {
 	}
 	if (!flag) {
 		temp = table_insert(var_s, yytext, currscopespace(), currscopespaceoffset(), currscope()+1, currfuncscope()+1, yylineno);
-		//incurrscopeoffset();
 	}
 	return temp;
 }
@@ -225,7 +222,6 @@ Symbol* idlist_commaid(char* yytext, unsigned yylineno) {
 	}
 	if (!flag) {
 		temp = table_insert(var_s, yytext, currscopespace(), currscopespaceoffset(), currscope()+1, currfuncscope()+1, yylineno);
-		//incurrscopeoffset();
 	}
 	return temp;
 }
@@ -327,6 +323,7 @@ Symbol* table_libcollision(const char* name) {
 }
 
 Symbol* table_insert(Symbol_t type, const char* name, unsigned space, unsigned offset, unsigned scope, unsigned funcscope, unsigned line){
+	if (type >=0 && type <=4) incurrscopeoffset();
     	Symbol *new_item = create_item(type, name, space, offset, scope, funcscope, line);
     	Symbol* tmp;
     	int hash;
@@ -382,10 +379,8 @@ void hide(int scope) {
 Symbol* create_item(Symbol_t type, const char* name, unsigned space, unsigned offset, unsigned scope, unsigned funcscope, unsigned line) {
     	Symbol* new_data;
     	new_data = (Symbol*) malloc(sizeof(Symbol));
-    	new_data->name = strdup(name);
-	new_data->type = type;
-	new_data->space = space;
-	new_data->offset = offset;
+    	//new_data->name = (char*) malloc(sizeof(name));
+	new_data->name = strdup(name);
 	new_data->scope = scope;
 	new_data->line = line;
 	new_data->returnList = NULL;

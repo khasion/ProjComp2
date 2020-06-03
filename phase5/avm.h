@@ -10,6 +10,7 @@
 #include "relop.h"
 #include "arith.h"
 #include "functions.h"
+#include "table.h"
 
 extern int pc;
 extern int executionFinished;
@@ -28,7 +29,7 @@ typedef enum vmopcode {
      jle_v,              jge_v,              jlt_v,
      jgt_v,              call_v,             pusharg_v,
      funcenter_v,        funcexit_v,         newtable_v,
-     tablegetelem_v,     tablesetelem_v,     jump_v,
+     tablesetelem_v,     tablegetelem_v,     jump_v,
      nop_v
 }vmopcode;
 

@@ -68,15 +68,40 @@ void instructions_backpatch (retList* list, unsigned label) {
     }
 }
 
+retList* append(retList* r, unsigned label){
+	retList* newret;
+	newret = (retList*) malloc(sizeof(retList));
+	newret->retVal = label;
+	newret->next = NULL;
+
+	newret->next = r;
+	r = newret;
+	return r;
+}
+
+void patch_retList(retList* r, unsigned label) {
+	retList* temp;
+     temp = r;
+	while (temp) {
+		instructions[temp->retVal].result.val = label;
+		temp = temp->next;
+	}
+}
+
 void patch_all () {
      for (int i = 1; i < nextquad(); i++) {
-          if (instructions[quads[i].taddress].result.type == label_a) {
-               instructions[quads[i].taddress].result.val = quads[quads[i].label].taddress;
+          if (instructions[quads[i].taddress].result.type == label_a ) {
+               if (quads[i].label < nextquad()) {
+                    instructions[quads[i].taddress].result.val = quads[quads[i].label].taddress;
+               }
+               else {
+                    instructions[quads[i].taddress].result.val = nextinstructionlabel();
+               }
           }
      }
 }
 
-void make_operand(Expr* e, vmarg* arg){
+void make_operand (Expr* e, vmarg* arg){
      switch(e->type) {
           
           /* All those below use a variable for storage.
@@ -119,7 +144,8 @@ void make_operand(Expr* e, vmarg* arg){
           /* Functions */
           case programfunc_e:
                arg->id = strdup(e->sym->name);
-               arg->val = e->sym->taddress;
+               arg->val = table_lookup_id(e->sym->name)->taddress;
+               //printf("taddr: %d ID: %s \n", e->sym->taddress, e->sym->name);
                arg->type = userfunc_a;
                break;
           case libraryfunc_e:
@@ -183,6 +209,7 @@ void generate (vmopcode op, Quad* quad) {
           make_operand(quad->result, &t.result);
      }
      quad->taddress = nextinstructionlabel();
+     t.srcLine = currprocessedquad();
      instructions_emit(t);
 }  
 
@@ -208,7 +235,15 @@ void generate_NEWTABLE (Quad* quad)      { generate(newtable_v, quad); }
 void generate_TABLEGETELEM (Quad* quad)  { generate(tablegetelem_v, quad); } 
 void generate_TABLESETELEM (Quad* quad)  { generate(tablesetelem_v, quad); } 
 void generate_ASSIGN (Quad* quad)        { generate(assign_v, quad);} 
-void generate_NOP ()                     { instruction t; t.opcode=nop_v; instructions_emit(t); } 
+
+void generate_NOP () {
+     instruction t; 
+     reset_operand(&t.arg1);
+     reset_operand(&t.arg2);
+     reset_operand(&t.result);
+     t.opcode=nop_v;
+     instructions_emit(t);
+} 
 
 unsigned currprocessedquad() {
      return currProcessedQuad;
@@ -228,6 +263,7 @@ void generate_relational (vmopcode  op, Quad* quad) {
      }
      
      t.result.type = label_a;
+     t.srcLine = currprocessedquad();
      quad->taddress = nextinstructionlabel();
      instructions_emit(t);
 }
@@ -309,7 +345,6 @@ void generate_OR (Quad* quad) {
 }
 
 void generate_AND (Quad* quad) {
-
      quad->taddress = nextinstructionlabel();  
      instruction t;    
 
@@ -351,7 +386,7 @@ void generate_PARAM(Quad* quad) {
      reset_operand(&t.arg2);
      reset_operand(&t.result);
      t.opcode = pusharg_v;
-     make_operand(quad->arg1, &t.arg1);  
+     make_operand(quad->arg1, &t.arg1);
      instructions_emit(t); 
 }   
 
@@ -361,7 +396,7 @@ void generate_CALL(Quad* quad) {
      reset_operand(&t.arg1);
      reset_operand(&t.arg2);
      reset_operand(&t.result);
-     t.opcode = call_v;  
+     t.opcode = call_v;
      make_operand(quad->arg1, &t.arg1);
      instructions_emit(t); 
 }   
@@ -381,6 +416,7 @@ void generate_FUNCSTART(Quad* quad){
      Symbol* f;
      f = quad->arg1->sym;
      f->taddress = nextinstructionlabel();
+     printf("TADDRESS  %d \n", quad->arg1->sym->taddress);
      quad->taddress = nextinstructionlabel();
  
 
@@ -417,7 +453,8 @@ void generate_RETURN(Quad* quad){
      reset_operand (&t.arg1);
      reset_operand (&t.arg2);
      t.result.type = label_a;
-     //instructions_emit(t);
+     t.srcLine = 0;
+     instructions_emit(t);
 }
 
 void generate_FUNCEND(Quad* quad){
@@ -425,6 +462,9 @@ void generate_FUNCEND(Quad* quad){
      reset_operand(&t.arg1);
      reset_operand(&t.arg2);
      Symbol* f = stack_pop(stack);
+     if ( f && f->returnList) {
+          patch_retList(f->returnList, nextinstructionlabel());
+     }
      quad->taddress = nextinstructionlabel();
      t.opcode = funcexit_v;
      make_operand(quad->arg1 , &t.result);
@@ -440,6 +480,7 @@ void generate1(void) {
           (*generators[quads[i].op])( (quads+i));
      }
      patch_all();
+     generate_NOP();
 }
 
 void print_instructions(FILE* fp, vmarg arg) {
@@ -455,7 +496,7 @@ void print_instructions(FILE* fp, vmarg arg) {
                case nil_a          : sprintf(str, "|7"); break;
                case number_a       : sprintf(str, "|4,%d:%f", arg.val, numConsts[arg.val]); break;
                case string_a       : sprintf(str, "|5,%d:\"%s\"", arg.val, stringConsts[arg.val]); break;
-               case userfunc_a     : sprintf(str, "|8,%d:%s", arg.val, userFuncs[arg.val].id); break;
+               case userfunc_a     : sprintf(str, "|8,%d:%s",arg.val, arg.id); break;
                case libfunc_a      : sprintf(str, "|9,%d:%s", arg.val,namedLibfuncs[arg.val]); break;
                default             : return;
           }
@@ -508,7 +549,7 @@ void generate_bin() {
      "uminus",           "and",              "or",
      "not",              "jeq",              "jne",
      "jle",              "jge",              "jlt",
-     "jqt",              "callfunc",         "pusharg",
+     "jgt",              "callfunc",         "pusharg",
      "enterfunc",        "exitfunc",         "newtable",
      "tablegetelem",     "tablesetelem",     "jump",
      "nop"

@@ -9,11 +9,11 @@ arithmetic_func_t arithmeticFuncs[] = {
 };
 
 void execute_arithmetic(instruction* instr){
-    avm_memcell* lv = avm_translate_operand(&instr->result, (avm_memcell*)0);
+    	avm_memcell* lv = avm_translate_operand(&instr->result, (avm_memcell*)0);
 	avm_memcell* rv1 = avm_translate_operand(&instr->arg1, &ax);
 	avm_memcell* rv2 = avm_translate_operand(&instr->arg2, &bx);
 
-	assert(lv && ( (&stack[AVM_STACKSIZE] >= lv && lv > &stack[top] )|| lv == &retval ));
+	//assert(lv && ( (&stack[AVM_STACKSIZE] >= lv && lv > &stack[top] )|| lv == &retval ));
 	assert(rv1 && rv2);
 
 	if (rv1->type !=number_m || rv2->type !=number_m ){

@@ -21,8 +21,7 @@ void avm_initstack (int n) {
                stack[top--] = *avm_translate_operand(&code[i].result, (avm_memcell*) 0);
           }
      }
-     printf("%d\n", n);
-     topsp = AVM_STACKSIZE - n;
+     top = topsp = AVM_STACKSIZE - n;
 }
 
 void avm_callsaveenviroment (void) {
@@ -79,7 +78,6 @@ void avm_calllibfunc (char* id) {
      }
      else {/*Notice that enter function and exit function are called manually!*/
           topsp = top;
-          totalActuals = 0;
           (*f)();
           if (!executionFinished) execute_funcexit((instruction*) 0);
      }
@@ -169,7 +167,7 @@ void execute_call (instruction* instr) {
           case userfunc_m: {
                pc=func->data.funcVal;
                assert(pc < AVM_ENDING_PC);
-               assert (code[pc].opcode == funcenter_v);
+               assert(code[pc].opcode == funcenter_v);
                break;
           }
           case string_m: avm_calllibfunc(func->data.strVal); break;
@@ -181,4 +179,5 @@ void execute_call (instruction* instr) {
                executionFinished=1;
           }
      }
+     totalActuals = 0;
 }

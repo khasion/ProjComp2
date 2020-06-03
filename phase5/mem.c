@@ -21,6 +21,7 @@ memclear_func_t (memclearFuncs[]) = {
      0
 };
 
+
 void initMem (void) {
      numConsts = (double*) malloc(sizeof(double)*1024);
      stringConsts = (char**) malloc(sizeof(char)*1024);
@@ -33,57 +34,10 @@ void initMem (void) {
      }
 }
 
-avm_memcell* avm_tablegetelem (avm_memcell* t, avm_memcell* index) {
-     avm_table_bucket* p;
-     switch (t->type) {
-          case number_m       : p = (t->data.tableVal->numIndexed[(int)numConsts[(int)index->data.numVal]]);
-          case string_m       : p = (t->data.tableVal->strIndexed[(int)numConsts[(int)index->data.numVal]]);
-          case bool_m         : p = (t->data.tableVal->boolIndexed[(int)numConsts[(int)index->data.numVal]]);
-          case userfunc_m     : p = (t->data.tableVal->userFuncIndexed[(int)numConsts[(int)index->data.numVal]]);
-          case libfunc_m      : p = (t->data.tableVal->libFuncIndexed[(int)numConsts[(int)index->data.numVal]]);
-          default             : assert(0);
-     }
-     return &p->value;
-}
-
-void avm_tablesetelem (avm_memcell* t, avm_memcell* index, avm_memcell* content) {
-     avm_table_bucket* p;
-     switch (t->type) {
-          case number_m       : p = (t->data.tableVal->numIndexed[(int)numConsts[(int)index->data.numVal]]); break;
-          case string_m       : p = (t->data.tableVal->strIndexed[(int)numConsts[(int)index->data.numVal]]); break;
-          case bool_m         : p = (t->data.tableVal->boolIndexed[(int)numConsts[(int)index->data.numVal]]); break;
-          case userfunc_m     : p = (t->data.tableVal->userFuncIndexed[(int)numConsts[(int)index->data.numVal]]); break;
-          case libfunc_m      : p = (t->data.tableVal->libFuncIndexed[(int)numConsts[(int)index->data.numVal]]); break;
-          default             : assert(0);
-     }
-     p->key = *index;
-     p->value = *content;
-     p->next = NULL;
-     t->data.tableVal->total++;
-}
-
-void avm_tableincrefcounter (avm_table* t) {
-     ++t->refCounter;
-}
-
-void avm_tabledecrefcounter (avm_table* t) {
-     assert(t->refCounter > 0);
-     if (!--t->refCounter) {
-          avm_tabledestroy(t);
-     }
-}
-
-void avm_tablebucketsinit (avm_table_bucket** p) {
-     p = (avm_table_bucket**) malloc(sizeof(avm_table_bucket)*AVM_TABLE_HASHSIZE);
-     for (int i=0; i < AVM_TABLE_HASHSIZE; ++i) {
-          p[i] = (avm_table_bucket*) malloc(sizeof(avm_table_bucket));
-          p[i] = NULL;
-     }
-}
 
 void memclear_string(avm_memcell* m){
      assert (m->data.strVal);
-     m->data.strVal = strdup("manos"); 
+     m->data.strVal = strdup("manos");
      free(m->data.strVal);
 }
 
@@ -97,46 +51,7 @@ void avm_memcellclear (avm_memcell* m){
      }
 }
 
-avm_table* avm_tablenew (void) {
-     avm_table* t = (avm_table* ) malloc(sizeof(avm_table));
-     AVM_WIPEOUT(*t);
 
-     t->refCounter = t->total = 0;
-     avm_tablebucketsinit(t->numIndexed);
-     avm_tablebucketsinit(t->strIndexed);
-     avm_tablebucketsinit(t->boolIndexed);
-     avm_tablebucketsinit(t->userFuncIndexed);
-     avm_tablebucketsinit(t->libFuncIndexed);
-
-     return t;
-}
-
-void memclear_table (avm_memcell* m){
-     assert (m->data.tableVal);
-     avm_tabledecrefcounter(m->data.tableVal);
-}
-
-void avm_tablebucketsdestroy (avm_table_bucket** p) {
-     for (int i=0; i<AVM_TABLE_HASHSIZE; ++i, ++p) {
-          for (avm_table_bucket* b = *p; b;) {
-               avm_table_bucket* del = b;
-               b = b->next;
-               avm_memcellclear(&del->key);
-               avm_memcellclear(&del->value);
-               free(del);
-          }
-          p[i] = (avm_table_bucket*) 0;
-     }
-}
-
-void avm_tabledestroy (avm_table* t) {
-     avm_tablebucketsdestroy(t->strIndexed);
-     avm_tablebucketsdestroy(t->numIndexed);
-     avm_tablebucketsdestroy(t->boolIndexed);
-     avm_tablebucketsdestroy(t->userFuncIndexed);
-     avm_tablebucketsdestroy(t->libFuncIndexed);
-     free(t);
-}
 
 char* const_getstring(int val) {
      return stringConsts[val];
@@ -181,11 +96,11 @@ void print_arrays() {
           printf("%d |%f\n", i, numConsts[i]);
      }
 
-    for (int i = 0; i < totalNamedLibFuncs; i++) {
+     for (int i = 0; i < totalNamedLibFuncs; i++) {
          printf("%d |%s\n", i, namedLibfuncs[i]);
-    } 
+     } 
 
-    for(int i = 0; i < totaluserFuncs; i++){
+     for(int i = 0; i < totaluserFuncs; i++){
          printf("%d |%s\n",i, userFuncs[i].id);
-    }
+     }
 }

@@ -53,7 +53,6 @@ program:  avmbinaryfile{;}
 
 avmbinaryfile: magicnumber codes arrays {
                     if ( $1 != 340200501) yyerror("WRONG MAGIC NUMBER");
-
                }
                ;
      
@@ -82,7 +81,6 @@ opcode:   ASSIGN{$$ = 0;}
           | MUL{$$ = 3;}
           | DIV{$$ = 4;}
           | MOD{$$ = 5;}
-          
           | AND{$$ = 7;}
           | OR{$$ = 8;}
           | NOT{ $$ = 9;}
@@ -266,6 +264,6 @@ int main(int argc, char** argv){
      avm_initstack(maxOffset);
      print_code();
      execute_cycle();
-    /// print_stack();
+     //print_stack();
      return 0;
 }

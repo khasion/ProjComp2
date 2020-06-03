@@ -34,8 +34,8 @@ execute_func_t executeFuncs[] = {
      execute_funcenter,
      execute_funcexit,
      execute_newtable,
-     execute_tablegetelem,
      execute_tablesetelem,
+     execute_tablegetelem,
      execute_jump,
      execute_nop
 };
@@ -70,7 +70,7 @@ void print_operand(vmarg arg) {
           case string_a       : sprintf(str, "%d, %d:%s ", arg.type, arg.val, stringConsts[arg.val]); break;
           case bool_a         : sprintf(str, "%d, %d:%s ", arg.type, arg.val, arg.id); break;
           case nil_a          : sprintf(str, "%d ", arg.type); break;
-          case userfunc_a     : sprintf(str, "%d, %d:%s ", arg.type, arg.val, userFuncs[arg.val].id); break;
+          case userfunc_a     : sprintf(str, "%d, %d:%s ", arg.type, arg.val, arg.id); break;
           case libfunc_a      : sprintf(str, "%d, %d:%s ", arg.type, arg.val, namedLibfuncs[arg.val]); break;
           case retval_a       : sprintf(str, "%d ", arg.type) ; break;
           default             : assert(0);
@@ -98,7 +98,7 @@ void print_code () {
           "jle",              "jge",              "jlt",
           "jgt",              "call",             "pusharg",
           "funcenter",        "funcexit",         "newtable",
-          "tablegetelem",     "tablesetelem",     "jump",
+          "tablesetelem",     "tablegetelem",     "jump",
           "nop"     
      };
      for (int i = 0; i < codeSize; i++) {
@@ -163,6 +163,7 @@ void execute_cycle(void) {
                currLine = instr->srcLine;
           }
           int oldPC = pc;
+          //printf("pc: %d, op: %d\n", pc, instr->opcode);
           (*executeFuncs[instr->opcode])(instr);
           if (pc == oldPC) {
                ++pc;
@@ -201,10 +202,6 @@ void execute_assign (instruction* instr) {
      avm_memcell* lv = avm_translate_operand(&instr->result , (avm_memcell*)0);
      avm_memcell* rv = avm_translate_operand(&instr->arg1 , &ax);
      //printf("ARG1 %s %f  RESULT %s %f \n",instr->result.id, lv->data.numVal ,instr->arg1.id ,rv->data.numVal);
-     assert(lv);
-     assert(rv);
-     assert(&stack[AVM_STACKSIZE] >= lv);
-     assert(lv >= &stack[top]);
      //assert(lv && ( &stack[AVM_STACKSIZE] >= lv && lv <= &stack[top]) || lv == &retval);
      //assert(rv && ( &stack[AVM_STACKSIZE] >= rv && rv < &stack[top] || rv == &retval));
 
