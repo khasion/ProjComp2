@@ -5,6 +5,8 @@ char**    stringConsts;
 char**    namedLibfuncs;
 userfunc* userFuncs;
 
+Node* temp_stack;
+
 int totalNumConsts = 0;
 int totalStringConsts = 0;
 int totaluserFuncs = 0;
@@ -21,17 +23,11 @@ memclear_func_t (memclearFuncs[]) = {
      0
 };
 
-
 void initMem (void) {
      numConsts = (double*) malloc(sizeof(double)*1024);
      stringConsts = (char**) malloc(sizeof(char)*1024);
      namedLibfuncs = (char**) malloc(sizeof(char)*1024);
      userFuncs = (userfunc*) malloc(sizeof(userfunc)*1024);
-
-     for (int i = 0; i < 1024; i++) {
-          stringConsts[i] = NULL;
-          namedLibfuncs[i] = NULL;
-     }
 }
 
 
@@ -66,8 +62,7 @@ char* libfuncs_getused(int val) {
 }
 
 int consts_newstring (char* s) {
-     stringConsts[totalStringConsts] = (char*) malloc(sizeof(s));
-     sprintf(stringConsts[totalStringConsts++], "%s", s);
+     stringConsts[totalStringConsts++] = strdup(s);
      return totalStringConsts - 1;
 }
 
@@ -82,8 +77,7 @@ int userfuncs_newfunc (userfunc s) {
 }
 
 int libfuncs_newused (char* s) {
-     namedLibfuncs[totalNamedLibFuncs] = (char*) malloc(sizeof(s));
-     sprintf(namedLibfuncs[totalNamedLibFuncs++], "%s", s);
+     namedLibfuncs[totalNamedLibFuncs++] = strdup(s);
      return totalNamedLibFuncs - 1;
 }
 
@@ -102,5 +96,31 @@ void print_arrays() {
 
      for(int i = 0; i < totaluserFuncs; i++){
          printf("%d |%s\n",i, userFuncs[i].id);
+     }
+}
+
+void tempstack_push(avm_memcell* m) {
+     Node* new_node;
+     new_node = (Node*) malloc(sizeof(Node));
+     new_node->cell = (avm_memcell*) malloc(sizeof(avm_memcell));
+     memcpy(new_node->cell, m, sizeof(avm_memcell));
+     new_node->next = temp_stack;
+     temp_stack = new_node;
+}
+
+avm_memcell* tempstack_pop() {
+     Node* temp = temp_stack;
+     if ( temp_stack) {
+          temp_stack = temp_stack->next;
+          return temp->cell;
+     }
+     return NULL;
+}
+
+void print_tempstack() {
+     Node* temp = temp_stack;
+     while (temp) {
+          printf("n: %f\n", temp->cell->data.numVal);
+          temp = temp->next;
      }
 }

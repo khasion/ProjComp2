@@ -20,7 +20,7 @@ void execute_arithmetic(instruction* instr){
 		avm_error("not a number arithmetic!\n" , "");
 		executionFinished=1;
 	}
-	else{
+	else {
 		arithmetic_func_t op = arithmeticFuncs[instr->opcode - add_v];
 		avm_memcellclear(lv);
 		lv->type = number_m;

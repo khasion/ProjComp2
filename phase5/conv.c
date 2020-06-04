@@ -51,7 +51,7 @@ char* number_tostring(avm_memcell* param){
 }
 
 char* string_tostring(avm_memcell* param) {
-	return strdup(param->data.strVal);
+	return param->data.strVal;
 }
 
 char* bool_tostring(avm_memcell* param){

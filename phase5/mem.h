@@ -32,6 +32,13 @@ typedef struct avm_memcell {
      }data;
 }avm_memcell;
 
+typedef struct node {
+     avm_memcell* cell;
+     struct node* next;
+}Node;
+
+extern Node* temp_stack;
+
 #define AVM_CONSTSIZE    1024
 #define AVM_WIPEOUT(m)   memset( &(m), 0, sizeof(m))
 
@@ -94,5 +101,9 @@ int libfuncs_newused (char* s);
 void initMem();
 
 void print_arrays();
+
+void tempstack_push(avm_memcell* m);
+avm_memcell* tempstack_pop();
+void print_tempstack();
 
 #endif

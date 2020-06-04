@@ -262,8 +262,11 @@ int main(int argc, char** argv){
      }
      yyparse();
      avm_initstack(maxOffset);
-     print_code();
-     execute_cycle();
+     //print_code();
+     while ( !executionFinished ) {
+          execute_cycle();
+     }
      //print_stack();
+     free_all();
      return 0;
 }

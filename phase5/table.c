@@ -77,29 +77,49 @@ void execute_tablegetelem(instruction* instr){
 }
 
 avm_memcell* avm_tablegetelem (avm_table* t, avm_memcell* index) {
+     avm_table_bucket* temp;
      for (int i = 0; i < AVM_TABLE_HASHSIZE; i++) {
-          if (t->numIndexed[i] && t->numIndexed[i]->key.data.numVal == index->data.numVal) {
-               return &t->numIndexed[i]->value;
+          temp = t->numIndexed[i];
+          while (temp) {
+               if (temp && temp->key.data.numVal == index->data.numVal) {
+                    return &temp->value;
+               }
+               temp = temp->next;
           }
      }
      for (int i = 0; i < AVM_TABLE_HASHSIZE; i++) {
-          if (t->strIndexed[i] && t->strIndexed[i]->key.data.numVal == index->data.numVal) {
-               return &t->strIndexed[i]->value;
+          temp = t->strIndexed[i];
+          while (temp) {
+               if (temp && temp->key.data.numVal == index->data.numVal) {
+                    return &temp->value;
+               }
           }
      }
      for (int i = 0; i < AVM_TABLE_HASHSIZE; i++) {
-          if (t->boolIndexed[i] && t->boolIndexed[i]->key.data.numVal == index->data.numVal) {
-               return &t->boolIndexed[i]->value;
+          temp = t->boolIndexed[i];
+          while (temp) {
+               if (temp && temp->key.data.numVal == index->data.numVal) {
+                    return &temp->value;
+               }
+               temp = temp->next;
           }
      }
      for (int i = 0; i < AVM_TABLE_HASHSIZE; i++) {
-          if (t->userFuncIndexed[i] && t->userFuncIndexed[i]->key.data.numVal == index->data.numVal) {
-               return &t->userFuncIndexed[i]->value;
+          temp = t->userFuncIndexed[i];
+          while (temp) {
+               if (temp && temp->key.data.numVal == index->data.numVal) {
+                    return &temp->value;
+               }
+               temp = temp->next;
           }
      }
      for (int i = 0; i < AVM_TABLE_HASHSIZE; i++) {
-          if (t->libFuncIndexed[i] && t->libFuncIndexed[i]->key.data.numVal == index->data.numVal) {
-               return &t->libFuncIndexed[i]->value;
+          temp = t->libFuncIndexed[i];
+          while (temp) {
+               if (temp && temp->key.data.numVal == index->data.numVal) {
+                    return &temp->value;
+               }
+               temp = temp->next;
           }
      }
      return NULL;
@@ -123,10 +143,10 @@ void avm_tabledecrefcounter (avm_table* t) {
 
 void avm_tablebucketsinit (avm_table_bucket** p) {
      p = (avm_table_bucket**) malloc(sizeof(avm_table_bucket)*AVM_TABLE_HASHSIZE);
-     for (int i=0; i < AVM_TABLE_HASHSIZE; ++i) {
+     /*for (int i=0; i < AVM_TABLE_HASHSIZE; ++i) {
           p[i] = (avm_table_bucket*) malloc(sizeof(avm_table_bucket));
           p[i] = NULL;
-     }
+     }*/
 }
 
 avm_table_bucket* add_indexedNum(avm_memcell* t, avm_memcell* index, avm_memcell* content) {

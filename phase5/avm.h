@@ -63,6 +63,7 @@ typedef struct instruction {
      int       srcLine;
 }instruction;
 
+
 extern instruction* code;
 
 void print_stack();
@@ -105,5 +106,6 @@ void execute_tablesetelem(instruction*);
 void execute_jump (instruction*);
 void execute_nop(instruction*);
 
+void free_all();
 
 #endif

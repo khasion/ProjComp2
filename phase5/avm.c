@@ -85,7 +85,6 @@ void print_stack() {
                case number_m  : printf("number: %d: %f\n", i, stack[i].data.numVal); break;
                case bool_m    : printf("bool: %d: %d\n", i, stack[i].data.boolVal); break;
           }
-          
      }
 }
 
@@ -125,7 +124,8 @@ avm_memcell* avm_translate_operand(vmarg* arg, avm_memcell* reg) {
           }
           case string_a: {
                reg->type = string_m;
-               reg->data.strVal = strdup(stringConsts[arg->val]);
+               reg->data.strVal = const_getstring(arg->val);
+              // reg->data.strVal = strdup(stringConsts[arg->val]);
                return reg;
           }
           case bool_a: {
@@ -136,7 +136,7 @@ avm_memcell* avm_translate_operand(vmarg* arg, avm_memcell* reg) {
           case nil_a: reg->type = nil_m; return reg;
           case userfunc_a: {
                reg->type = userfunc_m;
-               reg->data.funcVal = arg->val; /*Address already stored*/
+               reg->data.funcVal = userFuncs[arg->val].address; /*Address already stored*/
                return reg;
           }
           case libfunc_a: {
@@ -159,16 +159,12 @@ void execute_cycle(void) {
           instruction* instr = code + pc;
           assert(instr->opcode >= 0 && instr->opcode <= AVM_MAX_INSTRUCTIONS);
           
-          if (instr-> srcLine) {
-               currLine = instr->srcLine;
-          }
           int oldPC = pc;
           //printf("pc: %d, op: %d\n", pc, instr->opcode);
           (*executeFuncs[instr->opcode])(instr);
           if (pc == oldPC) {
                ++pc;
           }
-          execute_cycle();
      }
 }
 
@@ -182,6 +178,7 @@ void avm_error(char* err, void *content) {
 }
 
 void avm_assign (avm_memcell* lv, avm_memcell* rv){
+     
      if (lv == rv) return;
      if (lv->type == table_m && rv->type == table_m && lv->data.tableVal == rv->data.tableVal) {
           return;
@@ -214,6 +211,21 @@ void execute_or(instruction* t) {}
 void execute_not(instruction* t) {}
 void execute_nop(instruction* t){
      
+}
+
+void free_all() {
+     int i;
+     free(code);
+     free(numConsts);
+     for (i = 0; i < totalStringConsts; i++) {
+          free(stringConsts[i]);
+     }
+     free(stringConsts);
+     for (i = 0; i < totalNamedLibFuncs; i++) {
+          free(namedLibfuncs[i]);
+     }
+     free(namedLibfuncs);
+     free(userFuncs);
 }
 
 // void avm_initialize() {

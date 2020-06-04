@@ -9,6 +9,7 @@ library_func_t libfunc_array[] = {
 
 int top = 4096;
 int topsp = 4095;
+int savedtop = 0;
 avm_memcell stack[AVM_STACKSIZE];
 
 void avm_initstack (int n) {
@@ -16,11 +17,11 @@ void avm_initstack (int n) {
           AVM_WIPEOUT(stack[i]);
           stack[i].type = undef_m;
      }
-     for (int i = 0; i < codeSize; i++) {
+     /*for (int i = 0; i < codeSize; i++) {
           if ( code[i].result.type == global_a) {
                stack[top--] = *avm_translate_operand(&code[i].result, (avm_memcell*) 0);
           }
-     }
+     }*/
      top = topsp = AVM_STACKSIZE - n;
 }
 
@@ -37,12 +38,26 @@ void execute_funcenter(instruction* instr){
      top = top - funcInfo->localSize;
 }
 
+void avm_pusharg (instruction* instr, int n) {
+     avm_memcell* arg;
+     if (n==1) {
+          while ( (arg = tempstack_pop()) ) {
+               avm_assign(&stack[savedtop], arg);
+               savedtop--;
+          }
+     }
+     else {
+          arg = avm_translate_operand(&instr->arg1, &ax);
+          assert(arg);
+          tempstack_push(arg);
+          if (!savedtop) savedtop = top;
+          avm_dec_top();
+          ++totalActuals;
+     }
+}
+
 void execute_pusharg(instruction* instr){
-     avm_memcell* arg = avm_translate_operand(&instr->arg1, &ax);
-     assert(arg);
-     avm_assign(&stack[top], arg);
-     ++totalActuals;
-     avm_dec_top();
+     avm_pusharg(instr, 0);
 }
 
 void execute_funcexit (instruction* unused) {
@@ -86,11 +101,9 @@ void avm_calllibfunc (char* id) {
 void libfunc_print(void) {
      unsigned n = avm_totalactuals();
      for (unsigned i = 0; i < n; ++i) {
-          char* s = avm_tostring(avm_getactual(i)); 
-          puts(strdup(s));
-          if (s) {
-               free(s);
-          }
+          char* s = strdup(avm_tostring(avm_getactual(i)) ); 
+          fputs(s, stdout);
+          free(s);
      }
 }
 
@@ -161,6 +174,7 @@ userfunc* avm_getfuncinfo (int addr) {
 
 void execute_call (instruction* instr) {
      avm_memcell* func = avm_translate_operand(&instr->arg1 , &ax);
+     avm_pusharg(NULL, 1);
      assert(func);
      avm_callsaveenviroment();
      switch (func->type) {
@@ -180,4 +194,5 @@ void execute_call (instruction* instr) {
           }
      }
      totalActuals = 0;
+     savedtop = 0;
 }
