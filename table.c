@@ -167,9 +167,10 @@ Symbol* lvalue_dcolonid(char* yytext, unsigned yylineno) {
 
 Symbol* funcname_noname(char* yytext, unsigned yylineno) {
 	char* name;
+	Symbol* temp;
 	name = (char*) malloc(sizeof(char)* 3);
 	sprintf(name, "_f%d", func_id++);
-	Symbol* temp = table_insert(nonameprogramfunc_s, name, currscopespace(), currscopespaceoffset(), currscope(), currfuncscope(), yylineno);
+	temp = table_insert(nonameprogramfunc_s, name, currscopespace(), currscopespaceoffset(), currscope(), currfuncscope(), yylineno);
 	return temp;
 }
 
@@ -228,7 +229,7 @@ Symbol* idlist_commaid(char* yytext, unsigned yylineno) {
 
 SymTable *create_new_symtable() {
     	int i;
-    	SymTable *new_sym = (SymTable*) malloc(sizeof(SymTable*));
+    	SymTable *new_sym = (SymTable*) malloc(sizeof(SymTable));
     	new_sym->table = (Symbol**) malloc(509*sizeof(Symbol));
     	new_sym->size = 0;
     	new_sym->buckets = 509;
@@ -322,11 +323,12 @@ Symbol* table_libcollision(const char* name) {
 	return NULL;
 }
 
-Symbol* table_insert(Symbol_t type, const char* name, unsigned space, unsigned offset, unsigned scope, unsigned funcscope, unsigned line){
-	if (type >=0 && type <=4) incurrscopeoffset();
-    	Symbol *new_item = create_item(type, name, space, offset, scope, funcscope, line);
-    	Symbol* tmp;
+Symbol* table_insert(Symbol_t type, char* name, unsigned space, unsigned offset, unsigned scope, unsigned funcscope, unsigned line){
+	Symbol* new_item;
+	Symbol* tmp;
     	int hash;
+	if (type >=0 && type <=4) incurrscopeoffset();
+    	new_item = create_item(type, name, space, offset, scope, funcscope, line);
 
     	if (symtable->size == symtable->buckets-1) {
         	expand();
@@ -376,22 +378,33 @@ void hide(int scope) {
   	}
 }
 
-Symbol* create_item(Symbol_t type, const char* name, unsigned space, unsigned offset, unsigned scope, unsigned funcscope, unsigned line) {
+Symbol* create_item(Symbol_t type, char* name, unsigned space, unsigned offset, unsigned scope, unsigned funcscope, unsigned line) {
     	Symbol* new_data;
     	new_data = (Symbol*) malloc(sizeof(Symbol));
-    	//new_data->name = (char*) malloc(sizeof(name));
-	new_data->name = strdup(name);
+
+    	new_data->name = (char*) malloc(sizeof(char)*strlen(name)+1);
+	sprintf(new_data->name, "%s", name);
+
+	new_data->type = type;
+	new_data->space = space;
+	new_data->offset = offset;
 	new_data->scope = scope;
 	new_data->line = line;
 	new_data->returnList = NULL;
 
 	switch (type) {
-		case 0	:	new_data->desc = strdup("[local variable]");		break;
-		case 1	:	new_data->desc = strdup("[global variable]"); 	break;
-		case 2	:	new_data->desc = strdup("[variable]");			break;
-		case 3	:	new_data->desc = strdup("[userfunc]");			break;
-		case 4	:	new_data->desc = strdup("[userfunc noname]"); 	break;
-		case 5	:	new_data->desc = strdup("[library function]");	break;
+		case 0	:	new_data->desc = (char*) malloc(sizeof(char)*strlen("[local variable]"));
+					sprintf(new_data->desc, "%s", "[local variable]");	break;
+		case 1	:	new_data->desc = (char*) malloc(sizeof(char)*strlen("[global variable]"));
+					sprintf(new_data->desc, "%s", "[global variable]");	break;
+		case 2	:	new_data->desc = (char*) malloc(sizeof(char)*strlen("[variable]"));
+					sprintf(new_data->desc, "%s", "[variable]");	break;
+		case 3	:	new_data->desc = (char*) malloc(sizeof("[userfunc]"));
+					sprintf(new_data->desc, "%s", "[userfunc]");		break;
+		case 4	:	new_data->desc = (char*) malloc(sizeof("[userfunc noname]"));
+					sprintf(new_data->desc, "%s", "[userfunc noname]");	break;
+		case 5	:	new_data->desc = (char*)	malloc(sizeof("[library function]"));
+					sprintf(new_data->desc, "%s", "[library function]");	break;
 		default: assert(0);
 	}
 

@@ -37,7 +37,7 @@ void execute_tablesetelem(instruction* instr) {
      avm_memcell* i = avm_translate_operand(&instr->arg1, &ax);
      
      avm_memcell* c = avm_translate_operand(&instr->arg2, &bx);
-     assert(t && &stack[AVM_STACKSIZE] >= t && t > &stack[top]);
+     //assert(t && &stack[AVM_STACKSIZE] >= t && t > &stack[top]);
      assert(i && c);
      if(t->type != table_m) {
           avm_error("illegal use of type %s as table!", typeStrings[t->type]);
@@ -78,10 +78,15 @@ void execute_tablegetelem(instruction* instr){
 
 avm_memcell* avm_tablegetelem (avm_table* t, avm_memcell* index) {
      avm_table_bucket* temp;
+     int result = 0;
      for (int i = 0; i < AVM_TABLE_HASHSIZE; i++) {
           temp = t->numIndexed[i];
           while (temp) {
-               if (temp && temp->key.data.numVal == index->data.numVal) {
+               switch (index->type) {
+                    case number_m : result = temp->key.data.numVal == index->data.numVal; break;
+                    case string_m : result = strcmp(temp->key.data.strVal, index->data.strVal) == 0; break;
+               }
+               if (result) {
                     return &temp->value;
                }
                temp = temp->next;
@@ -90,15 +95,24 @@ avm_memcell* avm_tablegetelem (avm_table* t, avm_memcell* index) {
      for (int i = 0; i < AVM_TABLE_HASHSIZE; i++) {
           temp = t->strIndexed[i];
           while (temp) {
-               if (temp && temp->key.data.numVal == index->data.numVal) {
+               switch (index->type) {
+                    case number_m : result = temp->key.data.numVal == index->data.numVal; break;
+                    case string_m : result = strcmp(temp->key.data.strVal, index->data.strVal) == 0; break;
+               }
+               if (result) {
                     return &temp->value;
                }
+               temp = temp->next;
           }
      }
      for (int i = 0; i < AVM_TABLE_HASHSIZE; i++) {
           temp = t->boolIndexed[i];
           while (temp) {
-               if (temp && temp->key.data.numVal == index->data.numVal) {
+               switch (index->type) {
+                    case number_m : result = temp->key.data.numVal == index->data.numVal; break;
+                    case string_m : result = strcmp(temp->key.data.strVal, index->data.strVal) == 0; break;
+               }
+               if (result) {
                     return &temp->value;
                }
                temp = temp->next;
@@ -107,7 +121,11 @@ avm_memcell* avm_tablegetelem (avm_table* t, avm_memcell* index) {
      for (int i = 0; i < AVM_TABLE_HASHSIZE; i++) {
           temp = t->userFuncIndexed[i];
           while (temp) {
-               if (temp && temp->key.data.numVal == index->data.numVal) {
+               switch (index->type) {
+                    case number_m : result = temp->key.data.numVal == index->data.numVal; break;
+                    case string_m : result = strcmp(temp->key.data.strVal, index->data.strVal) == 0; break;
+               }
+               if (result) {
                     return &temp->value;
                }
                temp = temp->next;
@@ -116,7 +134,11 @@ avm_memcell* avm_tablegetelem (avm_table* t, avm_memcell* index) {
      for (int i = 0; i < AVM_TABLE_HASHSIZE; i++) {
           temp = t->libFuncIndexed[i];
           while (temp) {
-               if (temp && temp->key.data.numVal == index->data.numVal) {
+               switch (index->type) {
+                    case number_m : result = temp->key.data.numVal == index->data.numVal; break;
+                    case string_m : result = strcmp(temp->key.data.strVal, index->data.strVal) == 0; break;
+               }
+               if (result) {
                     return &temp->value;
                }
                temp = temp->next;
@@ -143,67 +165,78 @@ void avm_tabledecrefcounter (avm_table* t) {
 
 void avm_tablebucketsinit (avm_table_bucket** p) {
      p = (avm_table_bucket**) malloc(sizeof(avm_table_bucket)*AVM_TABLE_HASHSIZE);
-     /*for (int i=0; i < AVM_TABLE_HASHSIZE; ++i) {
-          p[i] = (avm_table_bucket*) malloc(sizeof(avm_table_bucket));
-          p[i] = NULL;
-     }*/
 }
 
 avm_table_bucket* add_indexedNum(avm_memcell* t, avm_memcell* index, avm_memcell* content) {
      avm_table_bucket* b;
+     int hash;
      b = (avm_table_bucket*) malloc(sizeof(avm_table_bucket));
      b->key = *index;
      b->value = *content;
      b->next = NULL;
 
-     b->next = t->data.tableVal->numIndexed[t->data.tableVal->total];
-     t->data.tableVal->numIndexed[t->data.tableVal->total] = b;
-     return t->data.tableVal->numIndexed[t->data.tableVal->total];
+     hash = t->data.tableVal->total%AVM_TABLE_HASHSIZE;
+
+     b->next = t->data.tableVal->numIndexed[hash];
+     t->data.tableVal->numIndexed[hash] = b;
+     return t->data.tableVal->numIndexed[hash];
 }
 avm_table_bucket* add_indexedString(avm_memcell* t, avm_memcell* index, avm_memcell* content) {
-      avm_table_bucket* b;
+     avm_table_bucket* b;
+     int hash;
      b = (avm_table_bucket*) malloc(sizeof(avm_table_bucket));
      b->key = *index;
      b->value = *content;
      b->next = NULL;
+     
+     hash = t->data.tableVal->total%AVM_TABLE_HASHSIZE;
 
-     b->next = t->data.tableVal->strIndexed[t->data.tableVal->total];
-     t->data.tableVal->strIndexed[t->data.tableVal->total] = b;
-     return t->data.tableVal->strIndexed[t->data.tableVal->total];
+     b->next = t->data.tableVal->strIndexed[hash];
+     t->data.tableVal->strIndexed[hash] = b;
+     return t->data.tableVal->strIndexed[hash];
      
 }
 avm_table_bucket* add_indexedBool(avm_memcell* t, avm_memcell* index, avm_memcell* content) {
      avm_table_bucket* b;
+     int hash;
      b = (avm_table_bucket*) malloc(sizeof(avm_table_bucket));
      b->key = *index;
      b->value = *content;
      b->next = NULL;
 
-     b->next = t->data.tableVal->boolIndexed[t->data.tableVal->total];
-     t->data.tableVal->boolIndexed[t->data.tableVal->total] = b;
-     return t->data.tableVal->boolIndexed[t->data.tableVal->total];
+     hash = t->data.tableVal->total%AVM_TABLE_HASHSIZE;
+
+     b->next = t->data.tableVal->boolIndexed[hash];
+     t->data.tableVal->boolIndexed[hash] = b;
+     return t->data.tableVal->boolIndexed[hash];
 }
 avm_table_bucket* add_indexedFunc(avm_memcell* t, avm_memcell* index, avm_memcell* content) {
      avm_table_bucket* b;
+     int hash;
      b = (avm_table_bucket*) malloc(sizeof(avm_table_bucket));
      b->key = *index;
      b->value = *content;
      b->next = NULL;
 
-     b->next = t->data.tableVal->userFuncIndexed[t->data.tableVal->total];
-     t->data.tableVal->userFuncIndexed[t->data.tableVal->total] = b;
-     return t->data.tableVal->userFuncIndexed[t->data.tableVal->total];
+     hash = t->data.tableVal->total%AVM_TABLE_HASHSIZE;
+
+     b->next = t->data.tableVal->userFuncIndexed[hash];
+     t->data.tableVal->userFuncIndexed[hash] = b;
+     return t->data.tableVal->userFuncIndexed[hash];
 }
 avm_table_bucket* add_indexedlibFunc(avm_memcell* t, avm_memcell* index, avm_memcell* content){
      avm_table_bucket* b;
+     int hash;
      b = (avm_table_bucket*) malloc(sizeof(avm_table_bucket));
      b->key = *index;
      b->value = *content;
      b->next = NULL;
 
-     b->next = t->data.tableVal->libFuncIndexed[t->data.tableVal->total];
-     t->data.tableVal->libFuncIndexed[t->data.tableVal->total] = b;
-     return t->data.tableVal->libFuncIndexed[t->data.tableVal->total];
+     hash = t->data.tableVal->total%AVM_TABLE_HASHSIZE;
+
+     b->next = t->data.tableVal->libFuncIndexed[hash];
+     t->data.tableVal->libFuncIndexed[hash] = b;
+     return t->data.tableVal->libFuncIndexed[hash];
 }
 
 avm_table* avm_tablenew (void) {

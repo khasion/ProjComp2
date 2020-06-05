@@ -64,7 +64,7 @@ nil       {return NIL;}
 "/"       {return DIV;}
 "%"       {return MOD;}
 "=="      {return EQ;}
-"!="      {return NOT_EQ;}
+"!="      {return NOT_EQ; }
 "++"      {return D_PLUS;}
 "--"      {return D_MINUS;}
 "<"       {return LESS;}
@@ -94,7 +94,8 @@ nil       {return NIL;}
   return REAL;
 }
 {id}      {
-  yylval.strval = strdup(yytext);
+  yylval.strval = (char*) malloc(sizeof(char)*strlen(yytext));
+  sprintf(yylval.strval, "%s", yytext);
   return ID;
 }
 {space}   {;}
@@ -102,13 +103,13 @@ nil       {return NIL;}
 "\"" 			{
       char *str;
 			int cnt = 0;
-			int size = 100;
-			str = (char*) malloc(sizeof(char)*size);
+			int size = 1000;
 			int c;
+			str = (char*) malloc(sizeof(char)*size);
 			while ( (c = input()) != EOF) {
 				if ( cnt >= size-2) {
-					size = size*2;
-					str = (char*) realloc(str, size);
+					size = size + 2;
+					str = (char*) realloc(str, size+1);
 				}
 				if ( c == '\\') {
 					c = input();
@@ -136,11 +137,13 @@ nil       {return NIL;}
 					str[cnt++] = c;
 				}
 			}
-			insert_list(yylineno, tokens++, str, "STRING", str, atoi(yytext));{
-      yylval.strval = strdup(str);
+      str[cnt++] = '\0';
+			/*insert_list(yylineno, tokens++, str, "STRING", str, atoi(yytext));*/
+      yylval.strval = (char*) malloc(sizeof(char)*cnt+1);
+      sprintf(yylval.strval, "%s", str);
     return STRING;
   }
-}
+
 
 "/*"  {
   int c;
@@ -169,16 +172,16 @@ nil       {return NIL;}
     printf("ERROR: OPEN COMMENT\n");
   } else{
     sprintf(cr_buffer,"%d %c %d",yylineno, '-', yylineno + line_counter);
-     insert_list(yylineno, tokens++, cr_buffer, "COMMENT BLOCK_COMMENT", "", atoi(yytext));}
+     /*insert_list(yylineno, tokens++, cr_buffer, "COMMENT BLOCK_COMMENT", "", atoi(yytext));*/}
 }
 
 {linecomment} {
   int c;
   while ((c = input()) != '\n' && c != EOF);
-  insert_list(yylineno, tokens++, "", "COMMENT LINE_COMMENT", "", atoi(yytext));
+  /*insert_list(yylineno, tokens++, "", "COMMENT LINE_COMMENT", "", atoi(yytext));*/
 }
 
-{illegal} {insert_list(yylineno,tokens++, yytext, "ILLIGAL CHAR","", atoi(yytext));
+{illegal} {/*insert_list(yylineno,tokens++, yytext, "ILLIGAL CHAR","", atoi(yytext));*/
 }
 <<EOF>> { return -1;}
 
@@ -243,9 +246,15 @@ void insert_list(int line_num, int token_num, char* content, char* type, char* c
  if(head == NULL){
    newnode->line_num = line_num;
    newnode->token_num = token_num;
-   newnode->content = strdup(content);
+
+   newnode->content = (char*) malloc(sizeof(content));
+   sprintf(newnode->content, "%s", content);
+
    newnode->type = type;
-   newnode->charvalue = strdup(charvalue);
+
+   newnode->charvalue = (char*) malloc(sizeof(charvalue));
+   sprintf(newnode->charvalue, "%s", charvalue);
+
    newnode->numbervalue = numbervalue;
    newnode->next = NULL;
    head = newnode;
@@ -255,9 +264,16 @@ void insert_list(int line_num, int token_num, char* content, char* type, char* c
    }
    newnode->line_num = line_num;
    newnode->token_num = token_num;
-   newnode->content = strdup(content);
+
+   newnode->content = (char*) malloc(sizeof(char)*strlen(content));
+   sprintf(newnode->content, "%s", content);
+
    newnode->type = type;
-   newnode->charvalue = strdup(charvalue);
+
+
+   newnode->charvalue = (char*) malloc(sizeof(char)*strlen(charvalue));
+   sprintf(newnode->charvalue, "%s", charvalue);
+
    newnode->numbervalue = numbervalue;
    newnode->next = NULL;
    tmp->next = newnode;

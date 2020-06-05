@@ -52,7 +52,7 @@ typedef struct symbol {
 typedef struct symtable {
     	struct symbol** table;
     	unsigned int buckets;
-    	unsigned int size;
+    	unsigned	int size;
 }SymTable;
 
 extern Symbol* scope_head;
@@ -96,7 +96,7 @@ int hash_function(const char* name);
 int hash_scope(int key);
 
 /* Insert a new Symbol in the hash table.*/
-Symbol* table_insert(Symbol_t type, const char* name, unsigned space, unsigned offset, unsigned scope, unsigned funcscope, unsigned line);
+Symbol* table_insert(Symbol_t type, char* name, unsigned space, unsigned offset, unsigned scope, unsigned funcscope, unsigned line);
 
 /* Print table contents.*/
 void print_table();
@@ -115,7 +115,7 @@ Symbol* table_libcollision(const char* name);
 void Error(int i, char* name, int line);
 
 /* Create new Symbol. */
-Symbol* create_item(Symbol_t type, const char* name, unsigned space, unsigned offset, unsigned scope, unsigned funcscope, unsigned line);
+Symbol* create_item(Symbol_t type, char* name, unsigned space, unsigned offset, unsigned scope, unsigned funcscope, unsigned line);
 
 void free_table(SymTable *freetable);
 

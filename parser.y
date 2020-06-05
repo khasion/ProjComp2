@@ -179,6 +179,7 @@ expr: 	assignexpr { $$ = $1;}
                emit(jump, NULL, NULL, NULL , 0, yylineno);
            }
           | expr NOT_EQ expr {
+               printf("EEEEEEEEEEEEEEE\n");
                $$ = newexpr(boolexpr_e);
                $$->sym = newtemp();
                $$->truelist = newlist(nextquad());
@@ -242,10 +243,6 @@ term: 	L_PAR expr R_PAR {$$ = $2;}
                emit(uminus, $2, NULL, $$, nextquad() + 1,yylineno); 
           }
           | NOT expr {
-               $2->truelist = newlist(nextquad());
-               $2->falselist = newlist(nextquad() + 1);
-               emit(if_eq, $2, newexpr_constbool(1), NULL, 0, yylineno);
-               emit(jump, NULL, NULL, NULL , 0, yylineno);
 
                $$ = newexpr(boolexpr_e);
                $$->sym = newtemp();
@@ -435,10 +432,11 @@ comma_elist: 	COMMA expr comma_elist{
 
 objectdef: 	L_BRA elist R_BRA {
                     int i;
+                    Expr* tmp;
                     Expr* t = newexpr(newtable_e);
                     t->sym = newtemp();
                     emit(tablecreate, t, NULL, NULL, nextquad() + 1,yylineno);
-                    Expr* tmp = $2;
+                    tmp = $2;
                     for (i = 0; tmp; tmp = tmp->next)  {
                          emit(tablesetelem, newexpr_constnum(i++), tmp, t, nextquad() + 1, yylineno);
                     }
@@ -446,9 +444,10 @@ objectdef: 	L_BRA elist R_BRA {
                }
                | L_BRA indexed R_BRA {
                     Expr* t = newexpr(newtable_e);
+                    Expr* tmp;
                     t->sym = newtemp();
                     emit(tablecreate, t, NULL, NULL, nextquad() + 1, yylineno);
-                    Expr *tmp= $2;
+                    tmp= $2;
                     while (tmp) {
                          Expr* tmp2 = tmp->index;
                          while (tmp2) {
@@ -499,9 +498,10 @@ funcname:		ID {
                }
                ;
 funcprefix: 	FUNC funcname {
+                    Expr* e;
                     $$ = table_lookup($2, currscope());
                     $$->iaddress = nextquad();
-                    Expr* e = newexpr(programfunc_e);
+                    e = newexpr(programfunc_e);
                     e->sym = $$;
                     emit(jump, NULL, NULL, NULL, 0, yylineno);
                     emit(funcstart, e, NULL, NULL, nextquad() + 1, yylineno);
@@ -529,13 +529,14 @@ funcblockend:	{ loopcounter = pop(&loopcounterstack); }
 
 funcdef: 	funcprefix funcargs funcblockstart funcbody funcblockend {
                int offset;
+               Expr* e;
                $funcprefix->totalLocals = $funcbody;
                exitscopespace();
                offset = pop_and_top(&scopeoffsetstack);
                restorecurrscopeoffset(offset);
                $$ = $funcprefix;
 
-               Expr* e = newexpr(programfunc_e);
+               e = newexpr(programfunc_e);
                e->sym = $$;
                emit(funcend, e,  NULL,  NULL, nextquad() + 1, yylineno);
                backpatch($funcprefix->iaddress, nextquad());
@@ -544,7 +545,7 @@ funcdef: 	funcprefix funcargs funcblockstart funcbody funcblockend {
 
 const: 	INT { $$ = newexpr_constnum($1);}
           | REAL {$$ = newexpr_constnum($1);}
-          | STRING {$$ = newexpr_conststring($1);}
+          | STRING {$$ = newexpr_conststring($1); }
           | NIL { $$ = newexpr(nil_e);}
           | TRUE { $$ = newexpr_constbool(1);}
           | FALSE { $$ = newexpr_constbool(0);}
@@ -694,7 +695,7 @@ int main(int argc, char** argv) {
           yyin = stdin;
      }
      yyparse();
-     //print_table();
+     /*print_table();*/
      print_intermediate();
      generate1();
      generate_bin();

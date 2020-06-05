@@ -1,0 +1,19 @@
+/*
+    Test file for the final phase of HY-340: Languages & Compilers
+    Computer science dpt, University of Crete, Greece
+
+infinite loop
+*/
+//x=0;
+i;
+function f()
+{
+  return;
+}
+for(i=0;i<5;i++)
+{
+ // print("aeeeasdfasd");
+  
+  //x=input();
+  f();
+}

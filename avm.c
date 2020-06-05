@@ -35,8 +35,9 @@ generator_func_t (generators[]) = {
 };
 
 void ins_init() {
+     int i;
      instructions = (instruction*) malloc(sizeof(instruction)*EXPAND_SIZE);
-     for (int i = 0; i < EXPAND_SIZE; i++) {
+     for (i = 0; i < EXPAND_SIZE; i++) {
           instructions[i].opcode = nop_v; 
           reset_operand(&instructions[i].result);
           reset_operand(&instructions[i].arg2);
@@ -47,8 +48,9 @@ void ins_init() {
 }
 
 void expand_ins() {
+     instruction* t;
      assert(totalIns <= currIns);
-     instruction* t = (instruction*) malloc(sizeof(instruction)*EXPAND_SIZE+totalIns*sizeof(instruction));
+     t = (instruction*) malloc(sizeof(instruction)*EXPAND_SIZE+totalIns*sizeof(instruction));
      if (instructions) {
           memcpy(t, quads, totalIns*sizeof(instruction));
           free(instructions);
@@ -89,10 +91,12 @@ void patch_retList(retList* r, unsigned label) {
 }
 
 void patch_all () {
-     for (int i = 1; i < nextquad(); i++) {
+     int i;
+     for (i = 1; i < nextquad(); i++) {
           if (instructions[quads[i].taddress].result.type == label_a ) {
                if (quads[i].label < nextquad()) {
                     instructions[quads[i].taddress].result.val = quads[quads[i].label].taddress;
+                    //printf("i:%d->%d\n", i, instructions[quads[i].taddress].result.val);
                }
                else {
                     instructions[quads[i].taddress].result.val = nextinstructionlabel();
@@ -115,7 +119,7 @@ void make_operand (Expr* e, vmarg* arg){
 
                assert(e->sym);
                arg->val = e->sym->offset;
-               arg->id = strdup(e->sym->name);
+               arg->id = e->sym->name;
                switch (e->sym->space) { 
                     case programvar     : arg->type = global_a; break;
                     case functionlocal  : arg->type = local_a; break;
@@ -128,28 +132,28 @@ void make_operand (Expr* e, vmarg* arg){
           /* Constants */
 
           case constbool_e:
-               arg->id = strdup(e->sym->name);
+               arg->id = e->sym->name;
                arg->val = e->boolConst;
                arg->type = bool_a; break;
           case conststring_e:
-               arg->id = strdup(e->strConst);
+               arg->id = e->sym->name;
                arg->val = consts_newstring(e->strConst);
                arg->type = string_a; break;
           case constnum_e:
-               arg->id = strdup(e->sym->name);
+               arg->id = e->sym->name;
                arg->val = consts_newnumber(e->numConst);
                arg->type = number_a; break;
           case nil_e: arg->type = nil_a; break;
 
           /* Functions */
           case programfunc_e:
-               arg->id = strdup(e->sym->name);
-               arg->val = table_lookup_id(e->sym->name)->taddress;
-               //printf("taddr: %d ID: %s \n", e->sym->taddress, e->sym->name);
+               arg->id = e->sym->name;
+               arg->val = userfuncs_newfunc( e->sym);
+               /*printf("taddr: %d ID: %s \n", e->sym->taddress, e->sym->name);*/
                arg->type = userfunc_a;
                break;
           case libraryfunc_e:
-               arg->id = strdup(e->sym->name);
+               arg->id = e->sym->name;
                arg->type = libfunc_a;
                arg->val = libfuncs_newused(e->sym->name);
                break;
@@ -183,8 +187,9 @@ unsigned nextinstructionlabel() {
 }
 
 void instructions_emit(instruction t) {
+     instruction* temp;
      if (currIns >= totalIns) expand_ins();
-     instruction* temp = instructions + currIns++;
+     temp = instructions + currIns++;
      temp->opcode = t.opcode;
      temp->arg1 = t.arg1;
      temp->arg2 = t.arg2;
@@ -208,6 +213,7 @@ void generate (vmopcode op, Quad* quad) {
      if ( quad->result ) {
           make_operand(quad->result, &t.result);
      }
+
      quad->taddress = nextinstructionlabel();
      t.srcLine = currprocessedquad();
      instructions_emit(t);
@@ -228,6 +234,7 @@ void generate_UMINUS (Quad* quad) {
      make_operand(quad->arg1, &t.arg1);
      make_numberoperand(&t.arg2, -1);
      make_operand(quad->result, &t.result);
+     quad->taddress = nextinstructionlabel();
      instructions_emit(t);
 }
 
@@ -277,9 +284,8 @@ void generate_IF_LESS (Quad* quad)      { generate_relational(jlt_v, quad); }
 void generate_IF_LESSEQ (Quad* quad)    { generate_relational(jle_v, quad); }
 
 void generate_NOT (Quad* quad) {    
-
-     quad->taddress = nextinstructionlabel();  
      instruction t;
+     quad->taddress = nextinstructionlabel();  
 
      t.opcode = jeq_v;  
      make_operand(quad->arg1, &t.arg1);  
@@ -309,9 +315,8 @@ void generate_NOT (Quad* quad) {
 } 
 
 void generate_OR (Quad* quad) {
-
-     quad->taddress = nextinstructionlabel();  
      instruction t;    
+     quad->taddress = nextinstructionlabel();  
 
      t.opcode = jeq_v;
      make_operand(quad->arg1, &t.arg1);  
@@ -345,8 +350,8 @@ void generate_OR (Quad* quad) {
 }
 
 void generate_AND (Quad* quad) {
-     quad->taddress = nextinstructionlabel();  
      instruction t;    
+     quad->taddress = nextinstructionlabel();  
 
      t.opcode = jeq_v;
      make_operand(quad->arg1, &t.arg1);  
@@ -380,8 +385,8 @@ void generate_AND (Quad* quad) {
 }
 
 void generate_PARAM(Quad* quad) {  
-     quad->taddress = nextinstructionlabel();
      instruction t;  
+     quad->taddress = nextinstructionlabel();
      reset_operand(&t.arg1);
      reset_operand(&t.arg2);
      reset_operand(&t.result);
@@ -391,8 +396,8 @@ void generate_PARAM(Quad* quad) {
 }   
 
 void generate_CALL(Quad* quad) {
-     quad->taddress = nextinstructionlabel();  
      instruction t;  
+     quad->taddress = nextinstructionlabel();  
      reset_operand(&t.arg1);
      reset_operand(&t.arg2);
      reset_operand(&t.result);
@@ -401,8 +406,8 @@ void generate_CALL(Quad* quad) {
      instructions_emit(t); 
 }   
 void generate_GETRETVAL(Quad* quad) {
-     quad->taddress = nextinstructionlabel();
      instruction t;
+     quad->taddress = nextinstructionlabel();
      reset_operand(&t.arg1);
      reset_operand(&t.arg2);
      reset_operand(&t.result);
@@ -414,13 +419,11 @@ void generate_GETRETVAL(Quad* quad) {
 
 void generate_FUNCSTART(Quad* quad){
      Symbol* f;
+     instruction t;
      f = quad->arg1->sym;
      f->taddress = nextinstructionlabel();
-     printf("TADDRESS  %d \n", quad->arg1->sym->taddress);
      quad->taddress = nextinstructionlabel();
  
-
-     instruction t;
      reset_operand(&t.arg1);
      reset_operand(&t.arg2);
      reset_operand(&t.result);
@@ -435,9 +438,9 @@ void generate_FUNCSTART(Quad* quad){
 }
 
 void generate_RETURN(Quad* quad){
-     quad->taddress = nextinstructionlabel();
      Symbol* f;
      instruction t;
+     quad->taddress = nextinstructionlabel();
      reset_operand(&t.arg1);
      reset_operand(&t.arg2);
      reset_operand(&t.result);
@@ -459,9 +462,10 @@ void generate_RETURN(Quad* quad){
 
 void generate_FUNCEND(Quad* quad){
      instruction t;
+     Symbol* f;
      reset_operand(&t.arg1);
      reset_operand(&t.arg2);
-     Symbol* f = stack_pop(stack);
+     f = stack_pop(stack);
      if ( f && f->returnList) {
           patch_retList(f->returnList, nextinstructionlabel());
      }
@@ -485,7 +489,7 @@ void generate1(void) {
 
 void print_instructions(FILE* fp, vmarg arg) {
           char* str;
-          str = (char*) malloc(sizeof(char)*30);
+          str = (char*) malloc(sizeof(char)*3000);
           switch ( arg.type) {
                case label_a        : sprintf(str, "|0,%d", arg.val); break;
                case global_a       : sprintf(str, "|1,%d:%s", arg.val ,arg.id); break;
@@ -501,35 +505,40 @@ void print_instructions(FILE* fp, vmarg arg) {
                default             : return;
           }
           fprintf(fp, "%-30s", str);
+          free(str);
 }
 
 void print_string(FILE* fp) {
+     int i;
      fprintf(fp, "\n_stringConsts: %d\n", totalStringConsts);
-     for (int i = 0; i < totalStringConsts; i++) {
+     for (i = 0; i < totalStringConsts; i++) {
           fprintf(fp, "%d\t", i);
           fprintf(fp, "|\"%s\"\n", stringConsts[i]);
      }
 }
 
 void print_num(FILE* fp) {
+     int i;
      fprintf(fp, "\n_numConsts: %d\n", totalNumConsts);
-     for (int i = 0; i < totalNumConsts; i++) {
+     for (i = 0; i < totalNumConsts; i++) {
           fprintf(fp, "%d\t", i);
           fprintf(fp, "|%f\n", numConsts[i]);
      }
 }
 
 void print_libfuncs(FILE* fp) {
+     int i;
      fprintf(fp, "\n_namedLibFuncs: %d\n", totalNamedLibFuncs);
-     for (int i = 0; i < totalNamedLibFuncs; i++) {
+     for (i = 0; i < totalNamedLibFuncs; i++) {
           fprintf(fp, "%d\t", i);
           fprintf(fp, "|\"%s\"\n", namedLibfuncs[i]);
      }
 }
 
 void print_userfuncs(FILE* fp) {
+     int i;
      fprintf(fp, "\n_userfuncs: %d\n", totaluserFuncs);
-     for (int i = 0; i < totaluserFuncs; i++) {
+     for (i = 0; i < totaluserFuncs; i++) {
           fprintf(fp, "%d\t", i);
           fprintf(fp, "|%s: %d: %d\n", userFuncs[i].id, userFuncs[i].localSize, userFuncs[i].address);
      }
@@ -543,6 +552,7 @@ void print_consts(FILE* fp) {
 }
 
 void generate_bin() {
+     int i;
      char* opcodes[25] = {
      "assign",           "add",              "sub",
      "mul",              "div",              "mod",
@@ -554,12 +564,12 @@ void generate_bin() {
      "tablegetelem",     "tablesetelem",     "jump",
      "nop"
      };
-     FILE* fp = stdout;
+     FILE* fp;
      unsigned magic = 340200501;
      fp = fopen("mikriloulou.abc", "wb");
      fprintf(fp, "_magic: %d \n", magic);
      fprintf(fp, "_code: %d\n", nextinstructionlabel());
-     for ( int i = 0; i < nextinstructionlabel(); i++) {
+     for ( i = 0; i < nextinstructionlabel(); i++) {
           vmarg res = (instructions + i)->result;
           vmarg arg1 = (instructions + i)->arg1;
           vmarg arg2 = (instructions + i)-> arg2;

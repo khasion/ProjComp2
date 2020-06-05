@@ -16,7 +16,8 @@ userfunc* userFuncs;
 unsigned  totaluserFuncs;
 
 static void avm_initstack (void) {
-     for (unsigned i=0; i<AVM_STACKSIZE; ++i) {
+     unsigned i;
+     for (i=0; i<AVM_STACKSIZE; ++i) {
           AVM_WIPEOUT(stack[i]);
           stack[i].type = undef_m;
      }
@@ -28,16 +29,10 @@ void initMem (void) {
      stringConsts = (char**) malloc(sizeof(char)*1024);
      namedLibfuncs = (char**) malloc(sizeof(char)*1024);
      userFuncs = (userfunc*) malloc(sizeof(userfunc)*1024);
-
-     for (int i = 0; i < 1024; i++) {
-          stringConsts[i] = NULL;
-          namedLibfuncs[i] = NULL;
-     }
 }
 
 unsigned consts_newstring (char* s) {
-     stringConsts[totalStringConsts] = (char*) malloc(sizeof(s));
-     sprintf(stringConsts[totalStringConsts++], "%s", s);
+     stringConsts[totalStringConsts++] = s;
      return totalStringConsts - 1;
 }
 
@@ -49,14 +44,12 @@ unsigned consts_newnumber (double d) {
 unsigned userfuncs_newfunc (Symbol* s) {
      userFuncs[totaluserFuncs].address = s->taddress;
      userFuncs[totaluserFuncs].localSize = s->totalLocals;
-     userFuncs[totaluserFuncs].id = (char*) malloc(sizeof(s->name));
-     sprintf(userFuncs[totaluserFuncs++].id ,"%s", s->name);
+     userFuncs[totaluserFuncs++].id = s->name;
      return totaluserFuncs - 1;
 }
 
 unsigned libfuncs_newused (char* s) {
-     namedLibfuncs[totalNamedLibFuncs] = (char*) malloc(sizeof(s));
-     sprintf(namedLibfuncs[totalNamedLibFuncs++], "%s", s);
+     namedLibfuncs[totalNamedLibFuncs++] = s;
      return totalNamedLibFuncs - 1;
 }
 
