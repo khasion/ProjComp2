@@ -261,7 +261,7 @@ int main(int argc, char** argv){
           yyin = stdin;
      }
      yyparse();
-     avm_initstack(maxOffset);
+     avm_initstack(maxOffset+2);
      //print_code();
      while ( !executionFinished ) {
           execute_cycle();

@@ -40,6 +40,15 @@ library_func_t avm_getlibraryfunc(char* id);
 void avm_calllibfunc(char* funcName);
 void libfunc_print(void);
 void libfunc_typeof (void);
-void libfunc_totalarguments();
+void libfunc_totalarguments(void);
+void libfunc_objectmemberkeys(void);
+void libfunc_objectotalmembers(void);
+void libfunc_objectcopy(void);
+void libfunc_argument(void);
+void libfunc_strtonum(void);
+void libfunc_sqrt(void);
+void libfunc_cos(void);
+void libfunc_sin(void);
+
 
 #endif

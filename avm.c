@@ -96,7 +96,7 @@ void patch_all () {
           if (instructions[quads[i].taddress].result.type == label_a ) {
                if (quads[i].label < nextquad()) {
                     instructions[quads[i].taddress].result.val = quads[quads[i].label].taddress;
-                    //printf("i:%d->%d\n", i, instructions[quads[i].taddress].result.val);
+                    /*printf("i:%d->%d\n", i, instructions[quads[i].taddress].result.val);*/
                }
                else {
                     instructions[quads[i].taddress].result.val = nextinstructionlabel();
@@ -120,6 +120,7 @@ void make_operand (Expr* e, vmarg* arg){
                assert(e->sym);
                arg->val = e->sym->offset;
                arg->id = e->sym->name;
+               
                switch (e->sym->space) { 
                     case programvar     : arg->type = global_a; break;
                     case functionlocal  : arg->type = local_a; break;
@@ -280,13 +281,12 @@ void generate_IF_EQ (Quad* quad)        { generate_relational(jeq_v, quad); }
 void generate_IF_NOTEQ(Quad* quad)      { generate_relational(jne_v, quad); } 
 void generate_IF_GREATER (Quad* quad)   { generate_relational(jqt_v, quad); } 
 void generate_IF_GREATEREQ(Quad* quad)  { generate_relational(jge_v, quad); }
-void generate_IF_LESS (Quad* quad)      { generate_relational(jlt_v, quad); } 
+void generate_IF_LESS (Quad* quad)      { generate_relational(jlt_v, quad); }
 void generate_IF_LESSEQ (Quad* quad)    { generate_relational(jle_v, quad); }
 
 void generate_NOT (Quad* quad) {    
      instruction t;
      quad->taddress = nextinstructionlabel();  
-
      t.opcode = jeq_v;  
      make_operand(quad->arg1, &t.arg1);  
      make_booloperand(&t.arg2, false);  

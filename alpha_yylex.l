@@ -37,7 +37,7 @@ integer (0[xX][0-9A-Fa-f]+)|([0-9]+)
 real    [0-9]*\.[0-9](e|E)?[0-9]*
 space   [\r\t \v\n]
 linecomment "//".*
-illegal ([\$ \~ \? \# \&\& \|\| \!]*)|(\_[a-zA-Z]*)|([0-9][a-zA-Z]*)
+illegal ([\$ \~ \? \# \&\& \|\|]*)|(\_[a-zA-Z]*)|([0-9][a-zA-Z]*)
 
 %%
 
@@ -63,8 +63,8 @@ nil       {return NIL;}
 "*"       {return MUL;}
 "/"       {return DIV;}
 "%"       {return MOD;}
+"!="      {return NOT_EQ;}
 "=="      {return EQ;}
-"!="      {return NOT_EQ; }
 "++"      {return D_PLUS;}
 "--"      {return D_MINUS;}
 "<"       {return LESS;}
@@ -94,6 +94,7 @@ nil       {return NIL;}
   return REAL;
 }
 {id}      {
+  //printf("EIIIIIIIII %s\n",yytext);
   yylval.strval = (char*) malloc(sizeof(char)*strlen(yytext));
   sprintf(yylval.strval, "%s", yytext);
   return ID;

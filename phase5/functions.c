@@ -4,7 +4,15 @@
 library_func_t libfunc_array[] = {
      libfunc_print,
      libfunc_typeof,
-     libfunc_totalarguments
+     libfunc_totalarguments,
+     libfunc_objectmemberkeys,
+     libfunc_objectotalmembers,
+     libfunc_objectcopy,
+     libfunc_argument,
+     libfunc_strtonum,
+     libfunc_sqrt,
+     libfunc_cos,
+     libfunc_sin
 };
 
 int top = 4096;
@@ -17,11 +25,6 @@ void avm_initstack (int n) {
           AVM_WIPEOUT(stack[i]);
           stack[i].type = undef_m;
      }
-     /*for (int i = 0; i < codeSize; i++) {
-          if ( code[i].result.type == global_a) {
-               stack[top--] = *avm_translate_operand(&code[i].result, (avm_memcell*) 0);
-          }
-     }*/
      top = topsp = AVM_STACKSIZE - n;
 }
 
@@ -82,7 +85,33 @@ library_func_t avm_getlibraryfunc(char* id) {
      else if (strcmp(id, "totalarguments") == 0) {
           return libfunc_array[2];
      }
-     return NULL;
+     else if (strcmp(id, "objectmemberkey") == 0) {
+          return libfunc_array[3];
+     }
+     else if (strcmp(id, "objectotalmembers") == 0) {
+          return libfunc_array[4];
+     }
+     else if (strcmp(id, "objectcopy") == 0) {
+          return libfunc_array[5];
+     }
+     else if (strcmp(id, "argument") == 0) {
+          return libfunc_array[6];
+     }
+     else if (strcmp(id, "strtonum") == 0) {
+          return libfunc_array[7];
+     }
+     else if (strcmp(id, "sqrt") == 0) {
+          return libfunc_array[8];
+     }
+     else if (strcmp(id, "cos") == 0) {
+          return libfunc_array[9];
+     }
+     else if (strcmp(id, "sin") == 0) {
+          return libfunc_array[10];
+     }else{
+          return NULL;
+     }
+     
 }
 
 void avm_calllibfunc (char* id) {  
@@ -101,7 +130,7 @@ void avm_calllibfunc (char* id) {
 void libfunc_print(void) {
      unsigned n = avm_totalactuals();
      for (unsigned i = 0; i < n; ++i) {
-          char* s = strdup(avm_tostring(avm_getactual(i)) ); 
+          char* s = strdup(avm_tostring(avm_getactual(i)) );
           fputs(s, stdout);
           free(s);
      }
@@ -136,6 +165,64 @@ void libfunc_totalarguments(){
      else {
           retval.type = number_m;
           retval.data.numVal = avm_get_envvalue(p_topsp + AVM_NUMACTUALS_OFFSET);
+     }
+}
+
+void libfunc_objectmemberkeys(){}
+void libfunc_objectotalmembers(void){
+     int n = avm_totalactuals();
+     if(n !=1) avm_error ("one argument (not %d) expected in 'objectotalmembers'!", &n);
+     else {
+          avm_memcellclear(&retval);
+          retval.type = number_m;
+          retval.data.numVal = avm_getactual(0)->data.tableVal->total;
+     }
+
+}
+void libfunc_objectcopy(void){
+     int n = avm_totalactuals();
+     if(n !=1) avm_error ("one argument (not %d) expected in 'objectcopy'!", &n);
+     else {
+          avm_memcellclear(&retval);
+          memcpy(&retval, avm_getactual(0), sizeof(avm_memcell));
+     }
+}
+void libfunc_argument(void){
+}
+void libfunc_strtonum(void){
+     int n = avm_totalactuals();
+     if(n !=1) avm_error ("one argument (not %d) expected in 'strtonum'!", &n);
+     else {
+          avm_memcellclear(&retval);
+          retval.type = string_m;
+          retval.data.numVal = string_tonumber(avm_getactual(0));
+     }
+}
+void libfunc_sqrt(void) {
+     int n = avm_totalactuals();
+     if(n !=1) avm_error ("one argument (not %d) expected in 'sqrt'!", &n);
+     else {
+          avm_memcellclear(&retval);
+          retval.type = number_m;
+          retval.data.numVal = sqrt(avm_getactual(0)->data.numVal);
+     }
+}
+void libfunc_cos(void) {
+     int n = avm_totalactuals();
+     if(n !=1) avm_error ("one argument (not %d) expected in 'cos'!", &n);
+     else {
+          avm_memcellclear(&retval);
+          retval.type = number_m;
+          retval.data.numVal = cos(avm_getactual(0)->data.numVal);
+     }
+}
+void libfunc_sin(void){
+     int n = avm_totalactuals();
+     if(n !=1) avm_error ("one argument (not %d) expected in 'sin'!", &n);
+     else {
+          avm_memcellclear(&retval);
+          retval.type = number_m;
+          retval.data.numVal = sin(avm_getactual(0)->data.numVal);
      }
 }
 

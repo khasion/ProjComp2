@@ -58,6 +58,9 @@ bool avm_eq(avm_memcell* arg1, avm_memcell* arg2) 	{
 			arg2->data.boolVal = avm_tobool(arg2); 
 			return arg1->data.boolVal == arg2->data.boolVal; break;
 		}
+		case table_m :{
+			return arg1->data.tableVal == arg2->data.tableVal;
+		}
 		default	: break;
 	}
 	return 0; 
@@ -66,7 +69,6 @@ bool avm_neq(avm_memcell* arg1, avm_memcell* arg2)	{
 	switch ( arg1->type) {
 		case number_m 	: {
 			arg2->data.numVal = avm_tonumber(arg2);
-			printf("EIIIIIIIIIIIIIIIIIII\n");
 			return arg1->data.numVal != arg2->data.numVal; break;
 		}
 		case string_m  	:{
@@ -76,6 +78,9 @@ bool avm_neq(avm_memcell* arg1, avm_memcell* arg2)	{
 		case bool_m		:{
 			arg2->data.boolVal = avm_tobool(arg2); 
 			return arg1->data.boolVal != arg2->data.boolVal; break;
+		}
+		case table_m :{
+			return arg1->data.tableVal == arg2->data.tableVal;
 		}
 		default	: break;
 	}
@@ -94,6 +99,9 @@ bool avm_lt(avm_memcell* arg1, avm_memcell* arg2)		{
 		case bool_m		:{
 			arg2->data.boolVal = avm_tobool(arg2); 
 			return arg1->data.boolVal < arg2->data.boolVal; break;
+		}
+		case table_m :{
+			return arg1->data.tableVal == arg2->data.tableVal;
 		}
 		default	: break;
 	}
@@ -114,6 +122,9 @@ bool avm_gt(avm_memcell* arg1, avm_memcell* arg2)		{
 			arg2->data.boolVal = avm_tobool(arg2); 
 			return arg1->data.boolVal > arg2->data.boolVal; break;
 		}
+		case table_m :{
+			return arg1->data.tableVal == arg2->data.tableVal;
+		}
 		default	: break;
 	}
 	return 0;
@@ -131,6 +142,9 @@ bool avm_gte(avm_memcell* arg1, avm_memcell* arg2)	{
 		case bool_m		:{
 			arg2->data.boolVal = avm_tobool(arg2); 
 			return arg1->data.boolVal >= arg2->data.boolVal; break;
+		}
+		case table_m :{
+			return arg1->data.tableVal == arg2->data.tableVal;
 		}
 		default	: break;
 	}
@@ -150,6 +164,9 @@ bool avm_lte(avm_memcell* arg1, avm_memcell* arg2)	{
 		case bool_m		:{
 			arg2->data.boolVal = avm_tobool(arg2); 
 			return arg1->data.boolVal <= arg2->data.boolVal; break;
+		}
+		case table_m :{
+			return arg1->data.tableVal == arg2->data.tableVal;
 		}
 		default	: break;
 	}

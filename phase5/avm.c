@@ -113,7 +113,7 @@ void print_code () {
 avm_memcell* avm_translate_operand(vmarg* arg, avm_memcell* reg) {
      switch(arg->type) {
           /*Variables*/
-          case global_a: return &stack[AVM_STACKSIZE-1-arg->val]; 
+          case global_a: return &stack[AVM_STACKSIZE-1-arg->val];
           case local_a:  return &stack[topsp-arg->val];
           case formal_a: return &stack[topsp+AVM_STACKENV_SIZE+1+arg->val];
           case retval_a: return &retval;
@@ -201,7 +201,6 @@ void execute_assign (instruction* instr) {
      //printf("ARG1 %s %f  RESULT %s %f \n",instr->result.id, lv->data.numVal ,instr->arg1.id ,rv->data.numVal);
      //assert(lv && ( &stack[AVM_STACKSIZE] >= lv && lv <= &stack[top]) || lv == &retval);
      //assert(rv && ( &stack[AVM_STACKSIZE] >= rv && rv < &stack[top] || rv == &retval));
-
      avm_assign(lv,rv);
 }
 

@@ -46,4 +46,6 @@ double avm_tonumber (avm_memcell* m);
 bool avm_tobool(avm_memcell* m);
 char* avm_tostring(avm_memcell* m);
 
+
+void print_table(avm_memcell* m);
 #endif

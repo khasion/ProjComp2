@@ -35,11 +35,25 @@ tobool_func_t toboolFuncs[] = {
 };
 
 double number_tonumber (avm_memcell* param) { return param->data.numVal;}
-double string_tonumber (avm_memcell* param) { return strlen(param->data.strVal);}
+double string_tonumber (avm_memcell* param) { 
+	int sum = 0;
+	if ( !param->data.strVal) return 0;
+	for (int i = 0; i < strlen(param->data.strVal); i++) {
+		sum += param->data.strVal[i];
+	}
+	return sum;
+}
 double bool_tonumber (avm_memcell* param) { return param->data.boolVal;}
 double table_tonumber (avm_memcell* param) { return param->data.tableVal->total; }
 double userfunc_tonumber (avm_memcell* param) { return param->data.funcVal; }
-double libfunc_tonumber (avm_memcell* param) { return strlen(param->data.libfuncVal); }
+double libfunc_tonumber (avm_memcell* param) { 
+	int i;
+	int sum = 0;
+	for (i = 0; i < strlen(param->data.libfuncVal); i++) {
+		sum += param->data.libfuncVal[i];
+	}
+	return sum;
+}
 double nil_tonumber (avm_memcell* param) { return 0;}
 double undef_tonumber (avm_memcell* param) { return -1;}
 
@@ -61,10 +75,8 @@ char* bool_tostring(avm_memcell* param){
      return strdup("'false'");
 }
 char* table_tostring(avm_memcell* param){ 
-     char* str;
-     str = (char*) malloc(sizeof(char)*100);
-     sprintf(str, "%d", param->data.tableVal->total);
-     return str;
+	print_table(param);
+     return "";
 }
 char* userfunc_tostring(avm_memcell* param){ 
      return userFuncs[param->data.funcVal].id;
@@ -93,6 +105,5 @@ bool avm_tobool (avm_memcell* m){
 }
 
 char* avm_tostring(avm_memcell* m) {
-	assert(m->type >= 0 && m->type < undef_m);
 	return tostringFuncs[m->type](m);
 }

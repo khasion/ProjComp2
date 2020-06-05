@@ -179,7 +179,6 @@ expr: 	assignexpr { $$ = $1;}
                emit(jump, NULL, NULL, NULL , 0, yylineno);
            }
           | expr NOT_EQ expr {
-               printf("EEEEEEEEEEEEEEE\n");
                $$ = newexpr(boolexpr_e);
                $$->sym = newtemp();
                $$->truelist = newlist(nextquad());
@@ -243,7 +242,6 @@ term: 	L_PAR expr R_PAR {$$ = $2;}
                emit(uminus, $2, NULL, $$, nextquad() + 1,yylineno); 
           }
           | NOT expr {
-
                $$ = newexpr(boolexpr_e);
                $$->sym = newtemp();
                $$->truelist = $2->falselist;

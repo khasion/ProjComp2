@@ -6,6 +6,7 @@
 #include <string.h>
 #include <assert.h>
 #include <stdbool.h>
+#include <math.h>
 #include "mem.h"
 #include "relop.h"
 #include "arith.h"

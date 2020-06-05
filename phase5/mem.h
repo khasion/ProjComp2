@@ -57,9 +57,11 @@ typedef struct avm_table {
      avm_table_bucket*   strIndexed[AVM_TABLE_HASHSIZE];
      avm_table_bucket*   numIndexed[AVM_TABLE_HASHSIZE];
      avm_table_bucket*   boolIndexed[AVM_TABLE_HASHSIZE];
+     avm_table_bucket*   tableIndexed[AVM_TABLE_HASHSIZE];
      avm_table_bucket*   userFuncIndexed[AVM_TABLE_HASHSIZE];
      avm_table_bucket*   libFuncIndexed[AVM_TABLE_HASHSIZE];
      int            total;
+     int            explored;
 }avm_table;
 
 typedef struct userfunc {
